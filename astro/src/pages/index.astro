@@ -19,25 +19,15 @@ const query = `*[_type=="article"] | order(publishedAt desc)[0...12]{
 const articles = await sanity.fetch<ArticleListItem[]>(query);
 ---
 
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <title>RUTM</title>
-  </head>
-  <body>
-    <BaseLayout title="RUTM">
-      <h1>Latest</h1>
+<BaseLayout title="RUTM">
+  <h1>Latest</h1>
 
-      <ul>
-        {
-          articles.map((a) => (
-            <li>
-              <a href={`/article/${a.slug}`}>{a.title}</a>
-              {a.excerpt ? <p>{a.excerpt}</p> : null}
-            </li>
-          ))
-        }
-      </ul>
-    </BaseLayout>
-  </body>
-</html>
+  <ul>
+    {articles.map((a) => (
+      <li>
+        <a href={`/article/${a.slug}`}>{a.title}</a>
+        {a.excerpt ? <p>{a.excerpt}</p> : null}
+      </li>
+    ))}
+  </ul>
+</BaseLayout>

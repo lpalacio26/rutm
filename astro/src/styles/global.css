@@ -1,12 +1,13 @@
 :root {
-  --max: 1100px;
-  --pad: 20px;
-  --bg-color: #0022FF;
-  --text-color: #FAFAFA;
-  --text-font: 'Helvetica';
+  --max: 800px;
+  --pad: 60px;
+  --bg-color: #0022ff;
+  --text-color: #fafafa;
+  --text-font: "Helvetica";
 }
 
-html, body {
+html,
+body {
   background-color: var(--bg-color);
   color: var(--text-color);
   margin: 0;
@@ -17,48 +18,42 @@ html, body {
 .site-header {
   position: sticky;
   top: 0;
-  background: white;
+  background: var(--bg-color);
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 .nav {
   max-width: var(--max);
   margin: 0 auto;
-  padding: 14px var(--pad);
+  margin-top:10px;
+  padding: 10px var(--pad);
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 24px;
-  text-transform: uppercase;
-  background-color: var(--bg-color);
-  font-family: var(--text-font);
-
-}
-
-.nav__brand {
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  text-decoration: none;
-  color: inherit;
+  justify-content: center; /* center the links container */
+  box-sizing: border-box;
+  border: 2px solid var(--text-color);
+  border-radius:2px;
+  border-bottom: 5px solid var(--text-color);
 }
 
 .nav__links {
   display: flex;
-  gap: 14px;
-  flex-wrap: wrap;
-  text-transform:uppercase;
+  width: 100%; /* <-- key */
+  justify-content: space-between; /* <-- spread items */
+  gap: 0; /* space-between replaces gap */
+  flex-wrap: nowrap; /* optional: prevents wrapping */
 }
 
 .nav__link {
   text-decoration: none;
   color: inherit;
-  opacity: 0.75;
+  opacity: 1;
   text-transform: uppercase;
 }
 
 .nav__link:hover {
   opacity: 1;
   text-decoration: underline;
+  text-decoration-thickness: 4px;
 }
 
 .nav__link[aria-current="page"] {

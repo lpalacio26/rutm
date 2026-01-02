@@ -3,7 +3,6 @@ import { sanity } from "../../lib/sanity";
 import { portableTextToHtml } from "../../lib/portableText";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 
-
 type SlugRow = { slug: string };
 
 type Article = {
@@ -21,10 +20,6 @@ type Article = {
     slug: string;
   };
 };
-
-
-
-
 export async function getStaticPaths() {
   const slugs = await sanity.fetch<SlugRow[]>(
     `*[_type=="article" && defined(slug.current)]{ "slug": slug.current }`
@@ -62,31 +57,17 @@ if (!article) {
 const bodyHtml = portableTextToHtml(article.content);
 ---
 
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <title>{article.title}</title>
-  </head>
-  <body>
-        <BaseLayout title="RUTM">
+<BaseLayout title={article.title}>
+  <a href="/">← Back</a>
 
-    <a href="/">← Back</a>
+  <h1>{article.title}</h1>
+  {article.excerpt ? <p>{article.excerpt}</p> : null}
 
-    <h1>{article.title}</h1>
-    {article.excerpt ? <p>{article.excerpt}</p> : null}
+  <p>
+    By <a href={`/author/${article.author.slug}`}>{article.author.name}</a>
+    {" · "}
+    <a href={`/section/${article.section.slug}`}>{article.section.title}</a>
+  </p>
 
-    <div set:html={bodyHtml} />
-    <p>
-  By{" "}
-  <a href={`/author/${article.author.slug}`}>
-    {article.author.name}
-  </a>
-  {" · "}
-  <a href={`/section/${article.section.slug}`}>
-    {article.section.title}
-  </a>
-</p>
+  <div set:html={bodyHtml} />
 </BaseLayout>
-    
-  </body>
-</html>

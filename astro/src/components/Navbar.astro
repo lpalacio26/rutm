@@ -9,8 +9,6 @@ const sections = await sanity.fetch<{ title: string; slug: string }[]>(
 
 <header class="site-header">
   <nav class="nav">
-    <a class="nav__brand" href="/">RUTM</a>
-
     <div class="nav__links">
       {sections.map((s) => {
         const href = `/section/${s.slug}`;
