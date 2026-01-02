@@ -1,5 +1,7 @@
 ---
+import BaseLayout from "../../layouts/BaseLayout.astro";
 import { sanity } from "../../lib/sanity";
+
 
 type AuthorSlug = { slug: string };
 
@@ -61,6 +63,7 @@ if (!data?.author) {
     <title>{data.author.name}</title>
   </head>
   <body>
+    
     <a href="/">← Home</a>
 
     <h1>{data.author.name}</h1>
