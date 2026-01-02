@@ -1,0 +1,88 @@
+---
+import { sanity } from "../../lib/sanity";
+import { portableTextToHtml } from "../../lib/portableText";
+
+type SlugRow = { slug: string };
+
+type Article = {
+  title: string;
+  excerpt?: string;
+  publishedAt?: string;
+  content?: any[];
+  slug: string;
+  author: {
+    name: string;
+    slug: string;
+  };
+  section: {
+    title: string;
+    slug: string;
+  };
+};
+
+
+
+
+export async function getStaticPaths() {
+  const slugs = await sanity.fetch<SlugRow[]>(
+    `*[_type=="article" && defined(slug.current)]{ "slug": slug.current }`
+  );
+
+  return slugs.map((s) => ({ params: { slug: s.slug } }));
+}
+
+const { slug } = Astro.params;
+
+const query = `*[_type=="article" && slug.current == $slug][0]{
+  title,
+  excerpt,
+  publishedAt,
+  content,
+  "slug": slug.current,
+
+  author->{
+    name,
+    "slug": slug.current
+  },
+
+  section->{
+    title,
+    "slug": slug.current
+  }
+}`;
+
+const article = await sanity.fetch<Article>(query, { slug });
+
+if (!article) {
+  return new Response("Not found", { status: 404 });
+}
+
+const bodyHtml = portableTextToHtml(article.content);
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>{article.title}</title>
+  </head>
+  <body>
+    <a href="/">← Back</a>
+
+    <h1>{article.title}</h1>
+    {article.excerpt ? <p>{article.excerpt}</p> : null}
+
+    <div set:html={bodyHtml} />
+    <p>
+  By{" "}
+  <a href={`/author/${article.author.slug}`}>
+    {article.author.name}
+  </a>
+  {" · "}
+  <a href={`/section/${article.section.slug}`}>
+    {article.section.title}
+  </a>
+</p>
+
+    
+  </body>
+</html>

@@ -1,0 +1,28 @@
+import { defineType, defineField } from "sanity";
+
+export default defineType({
+  name: "section",
+  title: "Section",
+  type: "document",
+  fields: [
+    defineField({
+      name: "title",
+      title: "Title",
+      type: "string",
+      validation: (Rule) => Rule.required(),
+    }),
+    defineField({
+      name: "slug",
+      title: "Slug",
+      type: "slug",
+      options: { source: "title", maxLength: 96 },
+      validation: (Rule) => Rule.required(),
+    }),
+    defineField({
+      name: "order",
+      title: "Navbar order",
+      type: "number",
+      initialValue: 0,
+    }),
+  ],
+});

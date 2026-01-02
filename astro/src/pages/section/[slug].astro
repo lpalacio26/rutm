@@ -1,0 +1,74 @@
+---
+import { sanity } from "../../lib/sanity";
+
+type SectionSlug = { slug: string };
+
+type Section = {
+  title: string;
+};
+
+type Article = {
+  title: string;
+  slug: string;
+  excerpt?: string;
+};
+
+// 1) Static paths for sections
+export async function getStaticPaths() {
+  const sections = await sanity.fetch<SectionSlug[]>(
+    `*[_type=="section" && defined(slug.current)]{
+      "slug": slug.current
+    }`
+  );
+
+  return sections.map((s) => ({
+    params: { slug: s.slug },
+  }));
+}
+
+const { slug } = Astro.params;
+
+// 2) Fetch section + its articles
+const data = await sanity.fetch<{
+  section: Section;
+  articles: Article[];
+}>(
+  `{
+    "section": *[_type=="section" && slug.current == $slug][0]{
+      title
+    },
+    "articles": *[_type=="article" && section->slug.current == $slug]
+      | order(publishedAt desc){
+        title,
+        "slug": slug.current,
+        excerpt
+      }
+  }`,
+  { slug }
+);
+
+if (!data?.section) {
+  return new Response("Section not found", { status: 404 });
+}
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>{data.section.title}</title>
+  </head>
+  <body>
+    <a href="/">← Home</a>
+
+    <h1>{data.section.title}</h1>
+
+    <ul>
+      {data.articles.map((a) => (
+        <li>
+          <a href={`/article/${a.slug}`}>{a.title}</a>
+          {a.excerpt ? <p>{a.excerpt}</p> : null}
+        </li>
+      ))}
+    </ul>
+  </body>
+</html>

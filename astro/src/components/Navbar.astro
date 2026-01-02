@@ -1,0 +1,31 @@
+---
+import { sanity } from "../lib/sanity";
+const pathname = Astro.url.pathname;
+
+const sections = await sanity.fetch<{ title: string; slug: string }[]>(
+  `*[_type=="section"] | order(order asc){ title, "slug": slug.current }`
+);
+---
+
+<header class="site-header">
+  <nav class="nav">
+    <a class="nav__brand" href="/">RUTM</a>
+
+    <div class="nav__links">
+      {sections.map((s) => {
+        const href = `/section/${s.slug}`;
+        const isActive = pathname === href;
+
+        return (
+          <a
+            class="nav__link"
+            href={href}
+            aria-current={isActive ? "page" : undefined}
+          >
+            {s.title}
+          </a>
+        );
+      })}
+    </div>
+  </nav>
+</header>

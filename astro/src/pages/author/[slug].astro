@@ -1,0 +1,83 @@
+---
+import { sanity } from "../../lib/sanity";
+
+type AuthorSlug = { slug: string };
+
+type Author = {
+  name: string;
+  bio?: any[];
+};
+
+type Article = {
+  title: string;
+  slug: string;
+  excerpt?: string;
+};
+
+// 1) Tell Astro which author pages to generate
+export async function getStaticPaths() {
+  const authors = await sanity.fetch<AuthorSlug[]>(
+    `*[_type=="author" && defined(slug.current)]{
+      "slug": slug.current
+    }`
+  );
+
+  return authors.map((a) => ({
+    params: { slug: a.slug },
+  }));
+}
+
+// 2) Get the slug from the URL
+const { slug } = Astro.params;
+
+// 3) Fetch author info + their articles
+const data = await sanity.fetch<{
+  author: Author;
+  articles: Article[];
+}>(
+  `{
+    "author": *[_type=="author" && slug.current == $slug][0]{
+      name,
+      bio
+    },
+    "articles": *[_type=="article" && author->slug.current == $slug]
+      | order(publishedAt desc){
+        title,
+        "slug": slug.current,
+        excerpt
+      }
+  }`,
+  { slug }
+);
+
+if (!data?.author) {
+  return new Response("Author not found", { status: 404 });
+}
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>{data.author.name}</title>
+  </head>
+  <body>
+    <a href="/">← Home</a>
+
+    <h1>{data.author.name}</h1>
+
+    {data.author.bio && (
+      <pre>{JSON.stringify(data.author.bio, null, 2)}</pre>
+    )}
+
+    <h2>Articles</h2>
+
+    <ul>
+      {data.articles.map((a) => (
+        <li>
+          <a href={`/article/${a.slug}`}>{a.title}</a>
+          {a.excerpt ? <p>{a.excerpt}</p> : null}
+        </li>
+      ))}
+    </ul>
+  </body>
+</html>
