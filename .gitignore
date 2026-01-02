@@ -1,0 +1,21 @@
+cat > .gitignore << 'EOF'
+# Node
+node_modules/
+npm-debug.log*
+yarn.lock
+pnpm-lock.yaml
+
+# Env files
+.env
+.env.*
+!.env.example
+
+# Astro build output
+astro/dist/
+
+# Sanity build output
+studio/dist/
+
+# OS
+.DS_Store
+EOF
