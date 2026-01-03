@@ -1,8 +1,8 @@
 :root {
-  --max: 800px;
+  --max: 1600px;
   --pad: 60px;
-  --bg-color: #0022ff;
-  --text-color: #fafafa;
+  --text-color: #0022ff;
+  --bg-color: #fafafa;
   --text-font: "Helvetica";
 }
 
@@ -15,6 +15,8 @@ body {
   font-family: var(--text-font);
 }
 
+a{text-decoration: none; color: var(--text-color)}
+
 .site-header {
   position: sticky;
   top: 0;
@@ -23,15 +25,15 @@ body {
 }
 
 .nav {
-  max-width: var(--max);
+  max-width: 800px;
   margin: 0 auto;
-  margin-top:10px;
+  margin-top: 10px;
   padding: 10px var(--pad);
   display: flex;
   justify-content: center; /* center the links container */
   box-sizing: border-box;
   border: 2px solid var(--text-color);
-  border-radius:2px;
+  border-radius: 2px;
   border-bottom: 5px solid var(--text-color);
 }
 
@@ -59,4 +61,13 @@ body {
 .nav__link[aria-current="page"] {
   opacity: 1;
   text-decoration: underline;
+}
+
+hr {
+  color: var(--text-color);
+  border: none;
+  background-color: var(--text-color);
+  height: 4px;
+  margin-top: 15px;
+  margin-bottom: 0;
 }

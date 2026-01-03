@@ -1,33 +1,638 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { sanity } from "../lib/sanity";
+import { urlFor } from "../lib/sanityImage";
 
 type ArticleListItem = {
   title: string;
-  slug: string;
   excerpt?: string;
   publishedAt?: string;
+  slug: string;
+  author: { name: string; slug: string };
+  section: { title: string; slug: string };
+  heroImage?: SanityImage;
 };
 
-const query = `*[_type=="article"] | order(publishedAt desc)[0...12]{
+type SanityImage = {
+  asset?: { _ref: string; _type: "reference" };
+  crop?: any;
+  hotspot?: any;
+  _type?: string;
+};
+
+type HomePage = {
+  marqueeText: string;
+  marqueeSpeed?: number;
+};
+
+const homeQuery = `*[_type=="homepage"][0]{ marqueeText, marqueeSpeed }`;
+const home = await sanity.fetch<HomePage>(homeQuery);
+
+const marqueeText = home?.marqueeText ?? "PERFECTLY DAUGHTER •";
+const marqueeSpeed = home?.marqueeSpeed ?? 18;
+
+// Build a long string so it fills the width nicely
+const repeated = Array.from({ length: 20 })
+  .map(() => marqueeText)
+  .join(" ");
+
+const query = `*[_type=="article"] | order(publishedAt desc)[0...4]{
   title,
-  "slug": slug.current,
   excerpt,
-  publishedAt
+  publishedAt,
+  "slug": slug.current,
+  heroImage,
+  "author": author->{ name, "slug": slug.current },
+  "section": section->{ title, "slug": slug.current }
 }`;
 
 const articles = await sanity.fetch<ArticleListItem[]>(query);
+
+const hero = articles[0];
+
+const rightBig = articles[1];
+const leftTop = articles[2];
+const leftBottom = articles[3];
+
+const rightBigSrc = rightBig?.heroImage
+  ? urlFor(rightBig.heroImage)
+      .width(1200)
+      .height(675)
+      .fit("crop")
+      .quality(80)
+      .url()
+  : null;
+
+const leftTopSrc = leftTop?.heroImage
+  ? urlFor(leftTop.heroImage)
+      .width(900)
+      .height(506)
+      .fit("crop")
+      .quality(80)
+      .url()
+  : null;
+
+const leftBottomSrc = leftBottom?.heroImage
+  ? urlFor(leftBottom.heroImage)
+      .width(600)
+      .height(338)
+      .fit("crop")
+      .quality(80)
+      .url()
+  : null;
+
+const heroSrc = hero?.heroImage
+  ? urlFor(hero.heroImage).width(1600).height(900).fit("crop").quality(90).url()
+  : null;
+
+const fmtDate = (iso?: string) =>
+  iso
+    ? new Date(iso).toLocaleDateString("en-GB", {
+        year: "numeric",
+        month: "short",
+        day: "2-digit",
+      })
+    : "";
 ---
 
 <BaseLayout title="RUTM">
-  <h1>Latest</h1>
+  <main class="landing">
+    {
+      hero ? (
+        <section class="hero">
+          <a
+            class="hero-media"
+            href={`/article/${hero.slug}`}
+            aria-label={hero.title}
+          >
+            {heroSrc ? (
+              <img src={heroSrc} alt="" loading="eager" />
+            ) : (
+              <div class="ph" aria-hidden="true" />
+            )}
+          </a>
 
-  <ul>
-    {articles.map((a) => (
-      <li>
-        <a href={`/article/${a.slug}`}>{a.title}</a>
-        {a.excerpt ? <p>{a.excerpt}</p> : null}
-      </li>
-    ))}
-  </ul>
+          <div class="hero-panel">
+            <h2 class="hero-title">
+              <a href={`/article/${hero.slug}`}>{hero.title}</a>
+            </h2>
+
+            {hero.section ? (
+              <a class="pill hover" href={`/section/${hero.section.slug}`}>
+                {hero.section.title}
+              </a>
+            ) : null}
+
+            {hero.excerpt ? <p class="hero-excerpt">{hero.excerpt}</p> : null}
+
+            {hero.author ? (
+              <a class="byline hover" href={`/author/${hero.author.slug}`}>
+                {hero.author.name}
+              </a>
+            ) : null}
+
+            <div class="meta">
+              {hero.publishedAt ? (
+                <time datetime={hero.publishedAt}>
+                  {fmtDate(hero.publishedAt)}
+                </time>
+              ) : null}
+            </div>
+          </div>
+        </section>
+      ) : null
+    }
+
+    <section class="below">
+      <div class="below-grid">
+        {/* BIG RIGHT */}
+        {
+          rightBig ? (
+            <article class="card card--big">
+              <a
+                class="card-media card-media--big"
+                href={`/article/${rightBig.slug}`}
+                aria-label={rightBig.title}
+              >
+                {rightBigSrc ? (
+                  <img src={rightBigSrc} alt="" loading="lazy" />
+                ) : (
+                  <div class="ph" aria-hidden="true" />
+                )}
+              </a>
+
+              <div class="card-body">
+                <h3 class="card-title">
+                  <a href={`/article/${rightBig.slug}`}>{rightBig.title}</a>
+                </h3>
+                {rightBig.section ? (
+                  <a
+                    class="pill hover"
+                    href={`/section/${rightBig.section.slug}`}
+                  >
+                    {rightBig.section.title}
+                  </a>
+                ) : null}
+                {rightBig.excerpt ? (
+                  <p class="card-excerpt">{rightBig.excerpt}</p>
+                ) : null}
+                {rightBig.author ? (
+                  <a
+                    class="byline hover"
+                    href={`/author/${rightBig.author.slug}`}
+                  >
+                    {rightBig.author.name}
+                  </a>
+                ) : null}
+                {rightBig.publishedAt ? (
+                  <div class="meta">
+                    <time datetime={rightBig.publishedAt}>
+                      {fmtDate(rightBig.publishedAt)}
+                    </time>
+                  </div>
+                ) : null}
+              </div>
+            </article>
+          ) : null
+        }
+
+        {/* LEFT TOP */}
+        {
+          leftTop ? (
+            <article class="card card--leftTop">
+              <a
+                class="card-media card-media--medium"
+                href={`/article/${leftTop.slug}`}
+                aria-label={leftTop.title}
+              >
+                {leftTopSrc ? (
+                  <img src={leftTopSrc} alt="" loading="lazy" />
+                ) : (
+                  <div class="ph" aria-hidden="true" />
+                )}
+              </a>
+
+              <div class="card-body">
+                <h3 class="card-title card-title--oneLine">
+                  <a href={`/article/${leftTop.slug}`}>{leftTop.title}</a>
+                </h3>
+                {leftTop.section ? (
+                  <a
+                    class="pill hover"
+                    href={`/section/${leftTop.section.slug}`}
+                  >
+                    {leftTop.section.title}
+                  </a>
+                ) : null}
+                {leftTop.excerpt ? (
+                  <p class="card-excerpt">{leftTop.excerpt}</p>
+                ) : null}
+                {leftTop.author ? (
+                  <a
+                    class="byline hover"
+                    href={`/author/${leftTop.author.slug}`}
+                  >
+                    {leftTop.author.name}
+                  </a>
+                ) : null}
+              </div>
+            </article>
+          ) : null
+        }
+
+        {/* LEFT BOTTOM (small) */}
+        {
+          leftBottom ? (
+            <article class="card card--small">
+              <a
+                class="card-media card-media--small"
+                href={`/article/${leftBottom.slug}`}
+                aria-label={leftBottom.title}
+              >
+                {leftBottomSrc ? (
+                  <img src={leftBottomSrc} alt="" loading="lazy" />
+                ) : (
+                  <div class="ph" aria-hidden="true" />
+                )}
+              </a>
+
+              <div class="card-body-small">
+                <h3 class="card-title card-title--oneLine small">
+                  <a href={`/article/${leftBottom.slug}`}>{leftBottom.title}</a>
+                </h3>
+                {leftBottom.section ? (
+                  <a
+                    class="pill hover"
+                    href={`/section/${leftBottom.section.slug}`}
+                  >
+                    {leftBottom.section.title}
+                  </a>
+                ) : null}
+                {leftBottom.excerpt ? (
+                  <p class="card-excerpt">{leftBottom.excerpt}</p>
+                ) : null}
+                {leftBottom.author ? (
+                  <a
+                    class="byline hover"
+                    href={`/author/${leftBottom.author.slug}`}
+                  >
+                    {leftBottom.author.name}
+                  </a>
+                ) : null}
+              </div>
+            </article>
+          ) : null
+        }
+      </div>
+    </section>
+    <section class="banner">
+      <div class="banner-inner">
+        <div class="banner-track" data-speed={marqueeSpeed}>
+          <span class="banner-text">{repeated}</span>
+          <span class="banner-text" aria-hidden="true">{repeated}</span>
+        </div>
+      </div>
+    </section>
+    <script>
+      function setupMarquee() {
+        const el = document.querySelector(".banner-track");
+        if (!(el instanceof HTMLElement)) return;
+
+        const speed = Number(el.dataset.speed || 40);
+        const width = el.scrollWidth / 2;
+        const duration = width / speed;
+
+        el.style.animationDuration = `${duration}s`;
+      }
+
+      setupMarquee();
+      window.addEventListener("resize", setupMarquee);
+    </script>
+  </main>
+
+  <style>
+    /* Page frame */
+    .landing {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 24px 0px;
+    }
+
+    /* HERO (image left + blue panel right) */
+    .hero {
+      display: grid;
+      grid-template-columns: 1.3fr 0.9fr;
+      align-items: stretch;
+      margin-bottom: 50px;
+    }
+
+    .hero-media {
+      display: block;
+      border: 10px solid var(--text-color);
+      border-right: none;
+      border-left: none;
+    }
+
+    .hero-media img,
+    .card-media img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      border-radius: 2px;
+    }
+
+    .hero-panel {
+      background: var(--bg-color, #0022ff);
+      color: var(--text-color);
+      padding: 28px;
+      border: 10px solid var(--text-color);
+      border-left: none;
+      border-right: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-height: 320px;
+    }
+
+    .hero-title {
+      margin: 0 0 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      line-height: 1.05;
+      font-size: clamp(24px, 3.2vw, 38px);
+    }
+
+    .hero-title a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .hero-excerpt {
+      margin: 0 0 14px;
+      line-height: 1.35;
+      max-width: 46ch;
+      opacity: 0.95;
+      font-size: clamp(18px, 0.5vw, 28px);
+    }
+
+    .pill {
+      display: inline-flex; /* shrink to content */
+      width: fit-content; /* explicit shrink-wrap */
+      max-width: 100%;
+      align-items: center;
+      justify-content: center;
+
+      padding: 6px 10px;
+      border: 2px solid var(--text-color);
+      border-radius: 6px;
+
+      color: inherit;
+      text-decoration: none;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      font-size: 14px;
+      font-weight: bolder;
+      line-height: 1;
+      white-space: nowrap; /* prevent wrapping */
+      margin-bottom: 10px;
+      transform: translateY(1px);
+      opacity: 0.9;
+    }
+
+    .byline {
+      color: inherit;
+      text-decoration: none;
+      opacity: 0.9;
+      font-size: 13px;
+      letter-spacing: 0.01em;
+    }
+
+    .hover:hover {
+      opacity: 1;
+    }
+
+    .meta {
+      font-size: 12px;
+      opacity: 0.85;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+
+    /* BELOW GRID */
+    .below {
+      background: var(--bg-color, #0022ff);
+      padding: 0px 26px 26px 26px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .below-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.5fr;
+      grid-template-areas:
+        "leftTop rightBig"
+        "small rightBig";
+      gap: 40px;
+      align-items: stretch;
+    }
+
+    .card {
+      background: var(--bg-color, #0022ff);
+      color: var(--text-color);
+      align-items: start;
+    }
+
+    .card-media {
+      display: block;
+      aspect-ratio: 16 / 9;
+      border-radius: 2px;
+      border: 2px solid var(--text-color);
+    
+    }
+
+    .card-media--big {
+      aspect-ratio: 4 / 3;
+      min-height: 360px; /* visual weight */
+    }
+    .card-media--medium {
+      aspect-ratio: 3 / 2;
+      min-height: 220px;
+    }
+
+    .card-media--small {
+      aspect-ratio: 4 / 3;
+      max-height: 240px;
+    }
+
+    .card-body {
+      padding: 18px 0px 0px;
+    }
+
+    .card-body-small {
+      padding: 0px 0px 0px 16px;
+    }
+
+    .card-title {
+      margin: 0 0 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      line-height: 1.1;
+      font-size: 26px;
+    }
+
+    .card-title a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .card-excerpt {
+      margin: 0;
+      line-height: 1.35;
+      opacity: 0.95;
+      font-weight: 200;
+      padding-bottom: 5px;
+    }
+
+    /* Slots */
+    .card--big {
+      grid-area: rightBig;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      min-height: 420px;
+    }
+
+    .card--leftTop {
+      grid-area: leftTop;
+      width: 100%;
+    }
+
+    .card--small {
+      align-items: start;
+      grid-area: small;
+      display: grid;
+      grid-template-columns: 240px 1fr;
+    }
+
+    /* One-line titles (like your left cards in the mock) */
+    .card-title--oneLine {
+      font-size: 18px;
+    }
+
+    /* Placeholder if no image */
+    .ph {
+      width: 100%;
+      height: 100%;
+      background: repeating-conic-gradient(
+        rgba(255, 255, 255, 0.16) 0% 25%,
+        rgba(255, 255, 255, 0.06) 0% 50%
+      );
+      background-size: 28px 28px;
+      min-height: 200px;
+    }
+
+    .hero-media,
+    .card-media {
+      position: relative;
+    }
+
+    .hero-media .ph,
+    .card-media .ph {
+      position: absolute;
+      inset: 0;
+      min-height: unset; /* let aspect-ratio control height */
+    }
+
+    /* SCROLLING BANNER */
+    .banner {
+      background: var(--text-color);
+      border-top: 10px solid var(--text-color);
+      border-bottom: 10px solid var(--text-color);
+      margin: 50px auto;
+    }
+
+    .banner-inner {
+      overflow: hidden;
+      padding: 18px 0;
+    }
+
+    .banner-track {
+      display: flex;
+      width: max-content;
+      animation: banner-scroll linear infinite;
+    }
+
+    .banner-text {
+      display: inline-block;
+      white-space: nowrap;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: 800;
+      font-size: clamp(42px, 7vw, 110px);
+      line-height: 1;
+      color: var(--bg-color);
+      font-style: italic;
+    }
+
+    /* Move exactly one copy width (50% because we duplicated once) */
+    @keyframes banner-scroll {
+      from {
+        transform: translateX(0);
+      }
+      to {
+        transform: translateX(-50%);
+      }
+    }
+
+    /* Accessibility: respect reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      .banner-track {
+        animation: none;
+        transform: none;
+      }
+    }
+
+    /* Responsive */
+    @media (max-width: 860px) {
+      .landing {
+        padding: 18px 18px 40px;
+      }
+      .hero {
+        grid-template-columns: 1fr;
+      }
+      .hero-panel {
+        min-height: auto;
+      }
+      .below-grid {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+          "rightBig"
+          "leftTop"
+          "small";
+      }
+      .card--small {
+        grid-template-columns: 120px 1fr;
+      }
+
+      /* Make the big one feel like a hero card but not enormous */
+      .card-media--big {
+        min-height: 220px;
+      }
+
+      /* Medium becomes compact */
+      .card-media--medium {
+        min-height: 170px;
+      }
+
+      /* Small becomes thumbnail-ish */
+      .card-media--small {
+        max-height: 110px;
+      }
+    }
+    @media (max-width: 860px) {
+      .card--small {
+        grid-template-columns: 160px 1fr; /* 120px is very tight */
+      }
+    }
+  </style>
 </BaseLayout>

@@ -11,6 +11,7 @@ type Article = {
   publishedAt?: string;
   content?: any[];
   slug: string;
+  imageUrl?: string;
   author: {
     name: string;
     slug: string;
@@ -37,6 +38,8 @@ const query = `*[_type=="article" && slug.current == $slug][0]{
   content,
   "slug": slug.current,
 
+  "imageUrl": mainImage,
+
   author->{
     name,
     "slug": slug.current
@@ -47,6 +50,7 @@ const query = `*[_type=="article" && slug.current == $slug][0]{
     "slug": slug.current
   }
 }`;
+
 
 const article = await sanity.fetch<Article>(query, { slug });
 
