@@ -1,0 +1,25 @@
+---
+type Props = {
+  href?: string;
+  center?: boolean;
+  class?: string;
+};
+
+const { href, center = false, class: extraClass = "" } = Astro.props;
+
+const classes = [
+  "pill",
+  center ? "pill--center" : "",
+  extraClass,
+].filter(Boolean).join(" ");
+---
+
+{href ? (
+  <a class={classes} href={href}>
+    <slot />
+  </a>
+) : (
+  <span class={classes}>
+    <slot />
+  </span>
+)}

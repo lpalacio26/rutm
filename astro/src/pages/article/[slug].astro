@@ -2,6 +2,8 @@
 import { sanity } from "../../lib/sanity";
 import { portableTextToHtml } from "../../lib/portableText";
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import { urlFor } from "../../lib/sanityImage"; // same helper as index
+import Pill from "../../components/Pill.astro";
 
 type SlugRow = { slug: string };
 
@@ -11,16 +13,12 @@ type Article = {
   publishedAt?: string;
   content?: any[];
   slug: string;
-  imageUrl?: string;
-  author: {
-    name: string;
-    slug: string;
-  };
-  section: {
-    title: string;
-    slug: string;
-  };
+  heroImage?: any;
+
+  author?: { name: string; slug: string };
+  section?: { title: string; slug: string };
 };
+
 export async function getStaticPaths() {
   const slugs = await sanity.fetch<SlugRow[]>(
     `*[_type=="article" && defined(slug.current)]{ "slug": slug.current }`
@@ -35,22 +33,14 @@ const query = `*[_type=="article" && slug.current == $slug][0]{
   title,
   excerpt,
   publishedAt,
-  content,
+  // ✅ important: will work even if the field is "body" instead of "content"
+  "content": coalesce(content, body),
   "slug": slug.current,
 
-  "imageUrl": mainImage,
-
-  author->{
-    name,
-    "slug": slug.current
-  },
-
-  section->{
-    title,
-    "slug": slug.current
-  }
+  heroImage,
+  "author": author->{ name, "slug": slug.current },
+  "section": section->{ title, "slug": slug.current }
 }`;
-
 
 const article = await sanity.fetch<Article>(query, { slug });
 
@@ -58,20 +48,151 @@ if (!article) {
   return new Response("Not found", { status: 404 });
 }
 
-const bodyHtml = portableTextToHtml(article.content);
+const heroSrc = article?.heroImage
+  ? urlFor(article.heroImage)
+      .width(2000)
+      .height(1000)
+      .fit("crop")
+      .quality(90)
+      .url()
+  : null;
+
+const bodyHtml = portableTextToHtml(article.content ?? []);
+
+const published = article.publishedAt
+  ? new Date(article.publishedAt).toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+    })
+  : null;
 ---
 
 <BaseLayout title={article.title}>
-  <a href="/">← Back</a>
+  <article class="article">
+    {/* 1) Full-bleed main image */}
+    {
+      heroSrc ? (
+        <div class="hero">
+          <img src={heroSrc} alt={article.title} loading="eager" />
+        </div>
+      ) : (
+        <div class="hero">
+          <div class="ph" aria-hidden="true" />
+        </div>
+      )
+    }
 
-  <h1>{article.title}</h1>
-  {article.excerpt ? <p>{article.excerpt}</p> : null}
+    {/* Centered column */}
+    <div class="content">
+      {/* optional back link; remove if you don't want it */}
+      <a class="back" href="/">← Back</a>
 
-  <p>
-    By <a href={`/author/${article.author.slug}`}>{article.author.name}</a>
-    {" · "}
-    <a href={`/section/${article.section.slug}`}>{article.section.title}</a>
-  </p>
+      {/* 2) Big title */}
+      <h1 class="title">{article.title}</h1>
 
-  <div set:html={bodyHtml} />
+      {/* 3) Section pill */}
+      {
+        article.section ? (
+          <Pill href={`/section/${article.section.slug}`} center>
+            {article.section.title}
+          </Pill>
+        ) : null
+      }
+
+      {/* 4) Author */}
+      {
+        article.author ? (
+          <div class="meta">
+            Words by{" "}
+            <a href={`/author/${article.author.slug}`}>{article.author.name}</a>
+          </div>
+        ) : null
+      }
+
+      {/* 5) Publication date */}
+      {published ? <div class="meta">{published}</div> : null}
+
+      {/* 6) Article body */}
+      <div class="prose" set:html={bodyHtml} />
+    </div>
+  </article>
 </BaseLayout>
+
+<style>
+  /* Full page wrapper */
+  .article {
+    padding-bottom: 80px;
+  }
+
+  /* 1) Full-bleed hero */
+  .hero {
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
+    height: clamp(280px, 60vh, 600px);
+  }
+  .hero img,
+  .hero .ph {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  /* Centered content column */
+  .content {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 28px 24px 80px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .back {
+    display: inline-block;
+    margin-bottom: 18px;
+    text-decoration: none;
+    opacity: 0.9;
+  }
+
+  .title {
+    font-size: clamp(34px, 5vw, 56px);
+    line-height: 1.05;
+    margin: 10px 0 14px;
+    text-transform: uppercase;
+    text-align: center;
+  }
+
+  .meta {
+    font-size: 16px;
+    margin: 6px auto 6px;
+    opacity: 0.9;
+  }
+
+  .meta a {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  /* Body: centered column + justified */
+  .prose {
+    margin-top: 22px;
+    font-size: 18px;
+    line-height: 1.65;
+    text-align: justify;
+    text-justify: inter-word;
+    hyphens: auto;
+  }
+
+  .prose p {
+    margin: 0 0 16px;
+  }
+
+  @media (max-width: 700px) {
+    .content {
+      padding: 22px 18px 60px;
+    }
+  }
+</style>
