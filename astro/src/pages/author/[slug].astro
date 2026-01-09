@@ -1,22 +1,30 @@
 ---
-import BaseLayout from "../../layouts/BaseLayout.astro";
 import { sanity } from "../../lib/sanity";
-
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import ArticleGrid from "../../components/ArticleGrid.astro";
 
 type AuthorSlug = { slug: string };
 
 type Author = {
   name: string;
-  bio?: any[];
 };
 
 type Article = {
   title: string;
   slug: string;
   excerpt?: string;
+  publishedAt?: string;
+
+  // keep the same “try multiple fields” approach as section page
+  mainImage?: any;
+  coverImage?: any;
+  image?: any;
+
+  author?: { name: string; slug: string };
+  section?: { title: string; slug: string };
 };
 
-// 1) Tell Astro which author pages to generate
+// 1) Static paths for authors
 export async function getStaticPaths() {
   const authors = await sanity.fetch<AuthorSlug[]>(
     `*[_type=="author" && defined(slug.current)]{
@@ -29,25 +37,31 @@ export async function getStaticPaths() {
   }));
 }
 
-// 2) Get the slug from the URL
 const { slug } = Astro.params;
 
-// 3) Fetch author info + their articles
+// 2) Fetch author + their articles
 const data = await sanity.fetch<{
   author: Author;
   articles: Article[];
 }>(
   `{
     "author": *[_type=="author" && slug.current == $slug][0]{
-      name,
-      bio
+      name
     },
-    "articles": *[_type=="article" && author->slug.current == $slug]
-      | order(publishedAt desc){
-        title,
-        "slug": slug.current,
-        excerpt
-      }
+    "articles": *[
+      _type=="article" &&
+      author->slug.current == $slug
+    ] | order(publishedAt desc){
+      title,
+      excerpt,
+      publishedAt,
+      mainImage,
+      coverImage,
+      image,
+      "slug": slug.current,
+      "author": author->{ name, "slug": slug.current },
+      "section": section->{ title, "slug": slug.current }
+    }
   }`,
   { slug }
 );
@@ -57,30 +71,18 @@ if (!data?.author) {
 }
 ---
 
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <title>{data.author.name}</title>
-  </head>
-  <body>
-    
-    <a href="/">← Home</a>
+<BaseLayout title={data.author.name}>
+  <h1>{data.author.name}</h1>
 
-    <h1>{data.author.name}</h1>
+  <ArticleGrid articles={data.articles} />
+</BaseLayout>
 
-    {data.author.bio && (
-      <pre>{JSON.stringify(data.author.bio, null, 2)}</pre>
-    )}
-
-    <h2>Articles</h2>
-
-    <ul>
-      {data.articles.map((a) => (
-        <li>
-          <a href={`/article/${a.slug}`}>{a.title}</a>
-          {a.excerpt ? <p>{a.excerpt}</p> : null}
-        </li>
-      ))}
-    </ul>
-  </body>
-</html>
+<style>
+  h1 {
+    text-transform: uppercase;
+    text-align: center;
+    border-top: 3px solid;
+    border-bottom: 3px solid;
+    padding: 25px 0;
+  }
+</style>

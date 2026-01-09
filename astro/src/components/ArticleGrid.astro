@@ -1,0 +1,89 @@
+---
+import Pill from "./Pill.astro";
+import { urlFor } from "../lib/sanityImage";
+
+type Article = {
+  title: string;
+  slug: string;
+  excerpt?: string;
+  publishedAt?: string;
+
+  // support both your homepage and section fallback
+  heroImage?: any;
+  mainImage?: any;
+  coverImage?: any;
+  image?: any;
+
+  author?: { name: string; slug: string };
+  section?: { title: string; slug: string };
+};
+
+type Props = {
+  articles: Article[];
+  showSectionPill?: boolean; // optional toggle
+};
+
+const { articles, showSectionPill = true } = Astro.props;
+
+const fmtDateLong = (iso?: string) =>
+  iso
+    ? new Date(iso).toLocaleDateString("en-GB", {
+        year: "numeric",
+        month: "long",
+        day: "2-digit",
+      })
+    : "";
+---
+
+<section class="older">
+  <div class="older-grid">
+    {
+      articles.map((a) => {
+        const img =
+          a.heroImage ?? a.mainImage ?? a.coverImage ?? a.image ?? null;
+
+        const src = img
+          ? urlFor(img).width(800).height(520).fit("crop").quality(80).url()
+          : null;
+
+        return (
+          <article class="older-card">
+            <a class="older-media" href={`/article/${a.slug}`} aria-label={a.title}>
+              {src ? <img src={src} alt="" loading="lazy" /> : <div class="ph" aria-hidden="true" />}
+            </a>
+
+            <div class="older-body">
+              <h3 class="older-title">
+                <a href={`/article/${a.slug}`}>{a.title}</a>
+              </h3>
+
+              {showSectionPill && a.section ? (
+                <Pill href={`/section/${a.section.slug}`} class="hover">
+                  {a.section.title}
+                </Pill>
+              ) : null}
+
+              {a.excerpt ? <p class="older-excerpt">{a.excerpt}</p> : null}
+
+              <div class="older-meta">
+                {a.author ? (
+                  <a class="older-byline hover" href={`/author/${a.author.slug}`}>
+                    {a.author.name}
+                  </a>
+                ) : (
+                  <span />
+                )}
+
+                {a.publishedAt ? (
+                  <time class="older-date" datetime={a.publishedAt}>
+                    {fmtDateLong(a.publishedAt)}
+                  </time>
+                ) : null}
+              </div>
+            </div>
+          </article>
+        );
+      })
+    }
+  </div>
+</section>

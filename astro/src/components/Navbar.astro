@@ -8,7 +8,7 @@ const sections = await sanity.fetch<{ title: string; slug: string }[]>(
 ---
 
 <header class="site-header">
-  <a href="/" class="site-logo" aria-label="Go to homepage">
+  <a href="/" class="site-logo site-logo--desktop" aria-label="Go to homepage">
     <svg
       viewBox="0 0 614 113"
       xmlns="http://www.w3.org/2000/svg"
@@ -36,24 +36,92 @@ const sections = await sanity.fetch<{ title: string; slug: string }[]>(
     </svg>
   </a>
 
-  <nav class="nav">
-    <div class="nav__links">
-      {
-        sections.map((s) => {
-          const href = `/section/${s.slug}`;
-          const isActive = pathname === href;
+  <nav class="nav" aria-label="Primary">
+    <div class="nav__top">
+    <a href="/" class="site-logo">
+      <svg
+      viewBox="0 0 614 113"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+    >
+      <g clip-path="url(#clip0)">
+        <path
+          d="M0 33.9992H37.6537V51.5938C41.9902 43.1349 43.8118 40.9414 48.3834 38.2345C54.9998 34.3492 67.0927 32.144 81.4773 32.144C97.9067 32.144 110.235 35.1893 116.628 40.9414C121.423 45.34 123.703 52.2705 123.703 63.7747V68.8501H86.9538C86.7187 68.3484 86.7187 67.835 86.7187 67.66V66.6449C86.7187 58.5243 80.5606 54.9774 65.9528 54.9774C54.7648 54.9774 47.4667 57.1826 43.1302 61.9079C40.1569 65.2915 39.252 68.6751 39.252 76.6207V112.988H0L0 33.9992Z"
+        ></path>
+        <path
+          d="M283.32 51.6872H216.356V32.144H396.046V51.6872H329.082V111.145H283.32V51.6872Z"
+        ></path>
+        <path
+          d="M376.631 32.144H414.743V48.2102C417.94 40.7664 421.595 37.2194 429.351 34.1742C436.203 31.6307 446.697 30.2889 459.707 30.2889C487.324 30.2889 503.53 36.2043 509.923 48.5603C514.483 35.5393 527.728 30.2889 556.027 30.2889C597.112 30.2889 614 41.1164 614 67.5083V111.157H574.748V69.7135C574.748 56.8559 568.355 53.1339 545.991 53.1339C521.793 53.1339 514.953 57.5326 514.953 73.5988V111.157H475.701V71.2303C475.701 56.0041 470.906 52.9589 446.944 52.9589C422.981 52.9589 415.907 57.5209 415.907 71.2303V111.157H376.655V32.144H376.631Z"
+        ></path>
+        <path
+          d="M229.624 111.145H191.277V92.8735C186.024 108.263 174.389 113 142.2 113C117.556 113 103.853 109.791 94.7219 101.834C87.6471 95.7437 84.9089 88.1365 84.9089 74.0888V32.144H124.161V72.9104C124.161 87.1214 130.319 90.33 157.031 90.33C183.744 90.33 190.36 85.2546 190.36 67.835V32.144H229.612V111.145H229.624ZM148.829 17.5946H117.098V0L148.829 0V17.5946ZM197.447 17.5946H165.716V0L197.447 0V17.5946Z"
+        ></path>
+      </g>
+      <defs>
+        <clipPath id="clip0">
+          <rect width="614" height="113"></rect>
+        </clipPath>
+      </defs>
+    </svg>
+    </a>
+    <button
+      class="nav__toggle"
+      type="button"
+      aria-expanded="false"
+      aria-controls="nav-links"
+    >
+      Menu
+    </button>
+    </div>
 
-          return (
-            <a
-              class="nav__link"
-              href={href}
-              aria-current={isActive ? "page" : undefined}
-            >
-              {s.title}
-            </a>
-          );
-        })
-      }
+    <div id="nav-links" class="nav__links" data-open="false">
+      <div class="nav__linksInner">
+        {
+          sections.map((s) => {
+            const href = `/section/${s.slug}`;
+            const isActive = pathname === href;
+
+            return (
+              <a
+                class="nav__link"
+                href={href}
+                aria-current={isActive ? "page" : undefined}
+              >
+                {s.title}
+              </a>
+            );
+          })
+        }
+      </div>
     </div>
   </nav>
-</header>
+  </header>
+  <script is:inline>
+    const btn = document.querySelector(".nav__toggle");
+    const links = document.getElementById("nav-links");
+
+    if (btn && links) {
+      btn.addEventListener("click", () => {
+        const expanded = btn.getAttribute("aria-expanded") === "true";
+
+        // toggle aria + dataset
+        btn.setAttribute("aria-expanded", String(!expanded));
+        links.dataset.open = String(!expanded);
+        btn.blur();
+
+        // update button label
+        btn.textContent = expanded ? "Menu" : "Close";
+      });
+
+      // optional: close menu when clicking a link (mobile)
+      links.addEventListener("click", (e) => {
+        const a = e.target.closest("a");
+        if (!a) return;
+
+        btn.setAttribute("aria-expanded", "false");
+        links.dataset.open = "false";
+        btn.textContent = "Menu";
+      });
+    }
+  </script>

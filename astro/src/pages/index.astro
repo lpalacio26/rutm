@@ -3,7 +3,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import { sanity } from "../lib/sanity";
 import { urlFor } from "../lib/sanityImage";
 import Pill from "../components/Pill.astro";
-
+import ArticleGrid from "../components/ArticleGrid.astro";
 
 type ArticleListItem = {
   title: string;
@@ -47,6 +47,27 @@ const query = `*[_type=="article"] | order(publishedAt desc)[0...4]{
   "author": author->{ name, "slug": slug.current },
   "section": section->{ title, "slug": slug.current }
 }`;
+
+const olderQuery = `*[_type=="article"] | order(publishedAt desc)[4...20]{
+  title,
+  excerpt,
+  publishedAt,
+  "slug": slug.current,
+  heroImage,
+  "author": author->{ name, "slug": slug.current },
+  "section": section->{ title, "slug": slug.current }
+}`;
+
+const olderArticles = await sanity.fetch<ArticleListItem[]>(olderQuery);
+
+const fmtDateLong = (iso?: string) =>
+  iso
+    ? new Date(iso).toLocaleDateString("en-GB", {
+        year: "numeric",
+        month: "long",
+        day: "2-digit",
+      })
+    : "";
 
 const articles = await sanity.fetch<ArticleListItem[]>(query);
 
@@ -295,6 +316,8 @@ const fmtDate = (iso?: string) =>
         </div>
       </div>
     </section>
+    <ArticleGrid articles={olderArticles} />
+
     <script>
       function setupMarquee() {
         const el = document.querySelector(".banner-track");

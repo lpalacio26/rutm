@@ -9,12 +9,12 @@ const { title = "RUTM" } = Astro.props;
   <head>
     <meta charset="utf-8" />
     <title>{title}</title>
+    <link rel="stylesheet" href="/src/styles/articleGrid.css" />
   </head>
   <body>
-      <Navbar />
-      <main>
-        <slot />
-      </main>
-    </header>
+    <Navbar />
+    <main>
+      <slot />
+    </main>
   </body>
 </html>

@@ -35,9 +35,16 @@ a {
   position: sticky;
   top: 0;
   background: var(--bg-color);
+  z-index: 999;
+  background: rgb(0 0 0 / 0%);
+  padding-top: 10px;
 }
 
 .nav {
+  position: relative;
+  z-index: 9999;
+  isolation: isolate; /* prevents children stacking weirdness */
+  background: var(--bg-color);
   max-width: 800px;
   margin: 0 auto;
   margin-top: 10px;
@@ -50,12 +57,18 @@ a {
   border-bottom: 5px solid var(--text-color);
 }
 
+/* wrapper (works for both desktop + mobile) */
 .nav__links {
+  width: 100%;
+}
+
+/* actual row of links (desktop default) */
+.nav__linksInner {
   display: flex;
-  width: 100%; /* <-- key */
-  justify-content: space-between; /* <-- spread items */
-  gap: 0; /* space-between replaces gap */
-  flex-wrap: nowrap; /* optional: prevents wrapping */
+  width: 100%;
+  justify-content: space-between;
+  gap: 0;
+  flex-wrap: wrap;
 }
 
 .nav__link {
@@ -63,6 +76,7 @@ a {
   color: inherit;
   opacity: 1;
   text-transform: uppercase;
+  position: relative;
 }
 
 .nav__link:hover {
@@ -73,7 +87,134 @@ a {
 
 .nav__link[aria-current="page"] {
   opacity: 1;
-  text-decoration: underline;
+  font-weight: bolder;
+  border-radius: 2px;
+}
+
+/* Toggle hidden on desktop */
+.nav__toggle {
+  display: none;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font: inherit;
+  padding: 10px 12px;
+  cursor: pointer;
+}
+
+.nav__top {
+  display: none;
+}
+
+/* Let links wrap on medium screens instead of overflowing */
+@media (max-width: 900px) {
+  .nav {
+    max-width: 100%;
+  }
+  .nav__linksInner {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px 16px;
+  }
+}
+
+/* Mobile: collapse into menu */
+@media (max-width: 640px) {
+  .site-header {
+    z-index: 1000;
+    padding-top: 0px;
+
+  }
+  .nav {
+    position: relative;
+    justify-content: space-between; /* was centered */
+    align-items: center;
+    padding: 10px 14px;
+    justify-content: flex-start; /* no centering */
+    margin-top: 0;
+    border-top: none;
+    border-left: none;
+    border-radius: 0;
+    border-right: none;
+    
+  }
+
+  /* TOP ROW */
+  .nav__top {
+    display: flex;
+    align-items: center;
+    width: 100%;
+  }
+
+  .site-logo {
+    display: flex;
+    align-items: center;
+  }
+
+  .site-logo svg {
+    height: 32px; /* slightly smaller on mobile */
+    margin: 0;
+  }
+
+  .nav__toggle {
+    display: inline-flex;
+    margin-left: auto; /* pushes MENU to the right */
+    padding: 6px 8px;
+  }
+  /* Wrapper becomes an overlay dropdown */
+  .nav__links {
+    position: absolute;
+    left: 0;
+    right: 0;
+    width: 100%;
+    top: calc(100% + 2px);
+
+    border: 2px solid var(--text-color);
+    border-bottom: 5px solid var(--text-color);
+    background: var(--bg-color);
+    box-sizing: border-box;
+
+    display: grid;
+    grid-template-rows: 0fr;
+
+    z-index: 20;
+
+    opacity: 0;
+    transform: translateY(-6px);
+    pointer-events: none;
+  }
+
+  .nav__linksInner {
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 12px;
+
+    /* IMPORTANT: no padding when closed */
+    padding: 0;
+  }
+
+  .nav__links[data-open="true"] {
+    grid-template-rows: 1fr;
+
+    /* OPEN STATE */
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  .nav__links[data-open="true"] .nav__linksInner {
+    padding: 14px;
+    box-sizing: border-box;
+    width: 100%;
+  }
+
+  .site-logo--desktop {
+    display: none;
+  }
 }
 
 hr {

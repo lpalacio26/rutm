@@ -1,0 +1,112 @@
+ /* OLDER ARTICLES (4 per row) */
+    .older {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 10px 26px 40px;
+    }
+
+    .older-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 34px;
+    }
+
+    .older-card {
+      color: var(--text-color);
+    }
+
+    .older-media {
+      display: block;
+      aspect-ratio: 4 / 3;
+      border: 2px solid currentColor;
+      position: relative;
+    }
+
+    .older-media img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .older-media .ph {
+      position: absolute;
+      inset: 0;
+    }
+
+    .older-body {
+      padding-top: 14px;
+    }
+
+    .older-title {
+      margin: 0 0 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      line-height: 1.1;
+      font-size: 20px;
+    }
+
+    .older-title a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+
+
+    .older-excerpt {
+      margin: 0 0 10px;
+      line-height: 1.35;
+      font-weight: 200;
+      /* keep it compact like the PDF blocks */
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      font-size: 14px;
+    }
+
+    .older-meta {
+      display: flex;
+      flex-direction: column;
+      justify-content: right;
+      gap: 12px;
+      font-size: 14px;
+      letter-spacing: 0.01em;
+    }
+
+    .older-byline {
+      color: inherit;
+      text-decoration: none;
+      opacity: 0.95;
+      text-align: right;
+    }
+
+    .older-date {
+      opacity: 0.9;
+      white-space: nowrap;
+      text-align: right;
+      font-size: 10px;
+    }
+
+    /* Responsive */
+    @media (max-width: 1100px) {
+      .older-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 860px) {
+      .older {
+        padding: 10px 18px 30px;
+      }
+      .older-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 22px;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .older-grid {
+        grid-template-columns: 1fr;
+      }
+    }
