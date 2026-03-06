@@ -1,3 +1,8 @@
+::selection {
+  background-color: #0022ff;
+  color: #fafafa;
+}
+
 :root {
   --max: 1600px;
   --pad: 60px;
