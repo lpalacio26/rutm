@@ -50,7 +50,33 @@ export default defineType({
       title: "Content",
       type: "array",
       of: [
-        { type: "block" },
+        {
+          type: "block",
+          marks: {
+            annotations: [
+              {
+                name: "footnote",
+                type: "object",
+                title: "Footnote",
+                fields: [
+                  {
+                    name: "note",
+                    title: "Note",
+                    type: "text",
+                    rows: 3,
+                    validation: (Rule: any) => Rule.required(),
+                  },
+                ],
+              },
+              {
+                name: "link",
+                type: "object",
+                title: "Link",
+                fields: [{ name: "href", type: "url", title: "URL" }],
+              },
+            ],
+          },
+        },
         { type: "pullQuote" },
       ],
     }),
