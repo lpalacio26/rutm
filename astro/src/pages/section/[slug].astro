@@ -19,6 +19,7 @@ type Article = {
   publishedAt?: string;
 
   // try common image field names (only one needs to exist)
+  heroImage?: any;
   mainImage?: any;
   coverImage?: any;
   image?: any;
@@ -58,6 +59,7 @@ const data = await sanity.fetch<{
   title,
   excerpt,
   publishedAt,
+  heroImage,
   mainImage,
   coverImage,
   image,
