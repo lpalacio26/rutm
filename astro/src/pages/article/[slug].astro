@@ -281,12 +281,22 @@ const published = article.publishedAt
   }
 
   .fn-sup {
-    font-size: 0.62em;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--text-color);
+    color: var(--bg-color);
+    font-size: 10px;
     font-weight: bold;
-    vertical-align: super;
-    line-height: 0;
-    margin-left: 1px;
+    line-height: 1;
+    vertical-align: middle;
+    margin-left: 3px;
     letter-spacing: 0;
+    position: relative;
+    top: -2px;
   }
 
   /* Note number inside the sidenote */
@@ -316,9 +326,7 @@ const published = article.publishedAt
   }
 
   .fn-sup {
-    padding: 1px 3px;
-    border-bottom: 2px solid var(--text-color);
-    transition: background 0.1s;
+    transition: opacity 0.1s;
   }
 
   /* Toggle open state */
@@ -369,8 +377,7 @@ const published = article.publishedAt
     }
 
     .fn-sup {
-      border-bottom: none;
-      padding: 0;
+      opacity: 0.8;
     }
 
     /* Ignore the checkbox state — note is always shown via float */
