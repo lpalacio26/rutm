@@ -81,7 +81,6 @@ if (!data?.section) {
 <BaseLayout title={data.section.title}>
   <h1>{data.section.title}</h1>
 
-  <ArticleGrid articles={data.articles} />
   {data.articles.length === 0
   ? <Marquee text="Coming soon ..." speed={18} />
   : <ArticleGrid articles={data.articles} />
