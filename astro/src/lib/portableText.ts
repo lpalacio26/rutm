@@ -1,4 +1,5 @@
 import { toHTML } from "@portabletext/to-html";
+import { urlFor } from "./sanityImage";
 
 export function portableTextToHtml(value: any) {
   // Counter resets per article render — gives sequential [1], [2], [3]…
@@ -12,7 +13,8 @@ export function portableTextToHtml(value: any) {
         h2: ({ children }: any) => `<h2>${children}</h2>`,
         h3: ({ children }: any) => `<h3>${children}</h3>`,
         h4: ({ children }: any) => `<h4>${children}</h4>`,
-        blockquote: ({ children }: any) => `<blockquote>${children}</blockquote>`,
+        blockquote: ({ children }: any) =>
+          `<blockquote>${children}</blockquote>`,
       },
       types: {
         pullQuote: ({ value }: any) => {
@@ -24,6 +26,17 @@ export function portableTextToHtml(value: any) {
               <blockquote class="pull-quote__text">${value.quote}</blockquote>
               ${attribution}
             </aside>`;
+        },
+        imageBlock: ({ value }: any) => {
+          if (!value?.image) return "";
+          const src = urlFor(value.image).width(1400).quality(85).url();
+          const caption = value.caption
+            ? `<figcaption class="image-block__caption">${value.caption}</figcaption>`
+            : "";
+          return `<figure class="image-block image-block--${value.size ?? "normal"}">
+    <img src="${src}" alt="${value.caption ?? ""}" loading="lazy" />
+    ${caption}
+  </figure>`;
         },
       },
       marks: {
@@ -41,7 +54,9 @@ export function portableTextToHtml(value: any) {
         // ─── Link ────────────────────────────────────────────────────────────
         link: ({ value, children }: any) => {
           const href = value?.href || "#";
-          const rel = href.startsWith("http") ? "noreferrer noopener" : undefined;
+          const rel = href.startsWith("http")
+            ? "noreferrer noopener"
+            : undefined;
           const target = href.startsWith("http") ? "_blank" : undefined;
           return `<a href="${href}" rel="${rel ?? ""}" target="${target ?? ""}">${children}</a>`;
         },
