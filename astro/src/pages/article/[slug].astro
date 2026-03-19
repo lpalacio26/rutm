@@ -14,6 +14,7 @@ type Article = {
   content?: any[];
   slug: string;
   heroImage?: any;
+  heroImageCredit?: string;
 
   author?: { name: string; slug: string };
   section?: { title: string; slug: string };
@@ -37,6 +38,7 @@ const query = `*[_type=="article" && slug.current == $slug][0]{
   "slug": slug.current,
 
   heroImage,
+  heroImageCredit,
   "author": author->{ name, "slug": slug.current },
   "section": section->{ title, "slug": slug.current }
 }`;
@@ -113,6 +115,10 @@ const published = article.publishedAt
 
       {/* 6) Article body */}
       <div class="prose" set:html={bodyHtml}></div>
+      {/* 7) Hero image credit */}
+{article.heroImageCredit ? (
+  <p class="hero-credit">{article.heroImageCredit}</p>
+) : null}
     </div>
   </article>
 </BaseLayout>
@@ -173,6 +179,14 @@ const published = article.publishedAt
     text-decoration: underline;
     text-underline-offset: 3px;
   }
+
+  .hero-credit {
+  margin-top: 48px;
+  font-size: 12px;
+  opacity: 0.45;
+  text-align: right;
+  letter-spacing: 0.03em;
+}
 
   @media (max-width: 700px) {
     .content {

@@ -46,6 +46,12 @@ export default defineType({
       options: { hotspot: true },
     }),
     defineField({
+  name: 'heroImageCredit',
+  title: 'Hero image credit',
+  type: 'string',
+  description: 'e.g. "Photo: Jane Smith / Getty Images"',
+}),
+    defineField({
       name: "content",
       title: "Content",
       type: "array",
