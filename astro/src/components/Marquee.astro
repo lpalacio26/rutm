@@ -67,4 +67,9 @@ const repeated = Array.from({ length: 20 }).map(() => text).join(" ");
       color: var(--bg-color);
       font-style: italic;
     }
+
+    @keyframes banner-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
 </style>
