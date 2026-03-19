@@ -1,0 +1,40 @@
+---
+type Props = {
+  text?: string;
+  speed?: number;
+};
+
+const { text = "PERFECTLY DAUGHTER •", speed = 18 } = Astro.props;
+
+const repeated = Array.from({ length: 20 }).map(() => text).join(" ");
+---
+
+<section class="banner">
+  <div class="banner-inner">
+    <div class="banner-track" data-speed={speed}>
+      <span class="banner-text">{repeated}</span>
+      <span class="banner-text" aria-hidden="true">{repeated}</span>
+    </div>
+  </div>
+</section>
+
+<script>
+  function setupMarquee() {
+    const el = document.querySelector(".banner-track");
+    if (!(el instanceof HTMLElement)) return;
+    const speed = Number(el.dataset.speed || 18);
+    const width = el.scrollWidth / 2;
+    el.style.animationDuration = `${width / speed}s`;
+  }
+
+  document.fonts.ready.then(() => {
+    requestAnimationFrame(() => {
+      setupMarquee();
+      window.addEventListener("resize", setupMarquee);
+    });
+  });
+</script>
+
+<style>
+  /* paste your existing .banner, .banner-inner, .banner-track, .banner-text, @keyframes styles here */
+</style>

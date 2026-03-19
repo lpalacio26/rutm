@@ -4,6 +4,7 @@ import { sanity } from "../lib/sanity";
 import { urlFor } from "../lib/sanityImage";
 import Pill from "../components/Pill.astro";
 import ArticleGrid from "../components/ArticleGrid.astro";
+import Marquee from "../components/Marquee.astro";
 
 type ArticleListItem = {
   title: string;
@@ -30,13 +31,9 @@ type HomePage = {
 const homeQuery = `*[_type=="homepage"][0]{ marqueeText, marqueeSpeed }`;
 const home = await sanity.fetch<HomePage>(homeQuery);
 
+
 const marqueeText = home?.marqueeText ?? "PERFECTLY DAUGHTER •";
 const marqueeSpeed = home?.marqueeSpeed ?? 18;
-
-// Build a long string so it fills the width nicely
-const repeated = Array.from({ length: 20 })
-  .map(() => marqueeText)
-  .join(" ");
 
 const query = `*[_type=="article"] | order(publishedAt desc)[0...4]{
   title,
@@ -308,14 +305,7 @@ const fmtDate = (iso?: string) =>
         }
       </div>
     </section>
-    <section class="banner">
-      <div class="banner-inner">
-        <div class="banner-track" data-speed={marqueeSpeed}>
-          <span class="banner-text">{repeated}</span>
-          <span class="banner-text" aria-hidden="true">{repeated}</span>
-        </div>
-      </div>
-    </section>
+    <Marquee text={marqueeText} speed={marqueeSpeed} />
     <ArticleGrid articles={olderArticles} />
 <script>
   function setupMarquee() {
@@ -536,38 +526,6 @@ const fmtDate = (iso?: string) =>
       position: absolute;
       inset: 0;
       min-height: unset; /* let aspect-ratio control height */
-    }
-
-    /* SCROLLING BANNER */
-    .banner {
-      background: var(--text-color);
-      border-top: 10px solid var(--text-color);
-      border-bottom: 10px solid var(--text-color);
-      margin: 50px auto;
-    }
-
-    .banner-inner {
-      overflow: hidden;
-      padding: 18px 0;
-    }
-
-    .banner-track {
-      display: flex;
-      width: max-content;
-      animation: banner-scroll linear infinite;
-      animation-duration: 30s;
-    }
-
-    .banner-text {
-      display: inline-block;
-      white-space: nowrap;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      font-weight: 800;
-      font-size: clamp(42px, 7vw, 110px);
-      line-height: 1;
-      color: var(--bg-color);
-      font-style: italic;
     }
 
     /* Move exactly one copy width (50% because we duplicated once) */

@@ -5,6 +5,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import { urlFor } from "../../lib/sanityImage"; // same helper as index
 import Pill from "../../components/Pill.astro";
 import ArticleGrid from "../../components/ArticleGrid.astro";
+import Marquee from "../../components/Marquee.astro";
 
 type SectionSlug = { slug: string };
 
@@ -81,6 +82,10 @@ if (!data?.section) {
   <h1>{data.section.title}</h1>
 
   <ArticleGrid articles={data.articles} />
+  {data.articles.length === 0
+  ? <Marquee text="Coming soon ..." speed={18} />
+  : <ArticleGrid articles={data.articles} />
+}
 </BaseLayout>
 
 <style>
