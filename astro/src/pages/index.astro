@@ -30,7 +30,7 @@ type HomePage = {
 const homeQuery = `*[_type=="homepage"][0]{ marqueeText, marqueeSpeed }`;
 const home = await sanity.fetch<HomePage>(homeQuery);
 
-const marqueeText = home?.marqueeText ?? "PERFECTLY DAUGHTER •";
+const marqueeText = home?.Text ?? "PERFECTLY DAUGHTER •";
 const marqueeSpeed = home?.marqueeSpeed ?? 18;
 
 // Build a long string so it fills the width nicely
@@ -320,18 +320,20 @@ const fmtDate = (iso?: string) =>
 
     <script>
       function setupMarquee() {
-        const el = document.querySelector(".banner-track");
-        if (!(el instanceof HTMLElement)) return;
+  const el = document.querySelector(".banner-track");
+  if (!(el instanceof HTMLElement)) return;
 
-        const speed = Number(el.dataset.speed || 40);
-        const width = el.scrollWidth / 2;
-        const duration = width / speed;
+  const speed = Number(el.dataset.speed || 40);
+  const width = el.scrollWidth / 2;
+  const duration = width / speed;
 
-        el.style.animationDuration = `${duration}s`;
-      }
+  el.style.animationDuration = `${duration}s`;
+}
 
-      setupMarquee();
-      window.addEventListener("resize", setupMarquee);
+document.fonts.ready.then(() => {
+  setupMarquee();
+  window.addEventListener("resize", setupMarquee);
+});
     </script>
   </main>
 
