@@ -36,5 +36,35 @@ const repeated = Array.from({ length: 20 }).map(() => text).join(" ");
 </script>
 
 <style>
-  /* paste your existing .banner, .banner-inner, .banner-track, .banner-text, @keyframes styles here */
+     /* SCROLLING BANNER */
+    .banner {
+      background: var(--text-color);
+      border-top: 10px solid var(--text-color);
+      border-bottom: 10px solid var(--text-color);
+      margin: 50px auto;
+    }
+
+    .banner-inner {
+      overflow: hidden;
+      padding: 18px 0;
+    }
+
+    .banner-track {
+      display: flex;
+      width: max-content;
+      animation: banner-scroll linear infinite;
+      animation-duration: 30s;
+    }
+
+    .banner-text {
+      display: inline-block;
+      white-space: nowrap;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: 800;
+      font-size: clamp(42px, 7vw, 110px);
+      line-height: 1;
+      color: var(--bg-color);
+      font-style: italic;
+    }
 </style>
