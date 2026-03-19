@@ -326,12 +326,16 @@ const fmtDate = (iso?: string) =>
     const width = el.scrollWidth / 2;
     const duration = width / speed;
 
+    console.log("marquee:", { speed, width, duration }); // add this
     el.style.animationDuration = `${duration}s`;
   }
 
   document.fonts.ready.then(() => {
-    setupMarquee();
-    window.addEventListener("resize", setupMarquee);
+    // wrap in rAF to ensure layout is computed after font load
+    requestAnimationFrame(() => {
+      setupMarquee();
+      window.addEventListener("resize", setupMarquee);
+    });
   });
 </script>
   </main>
