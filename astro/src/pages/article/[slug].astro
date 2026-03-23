@@ -17,7 +17,7 @@ type Article = {
   heroImageCredit?: string;
 
   author?: { name: string; slug: string };
-  section?: { title: string; slug: string };
+  sections?: { title: string; slug: string }[]
 };
 
 export async function getStaticPaths() {
@@ -46,7 +46,7 @@ const query = `*[_type=="article" && slug.current == $slug][0]{
   heroImage,
   heroImageCredit,
   "author": author->{ name, "slug": slug.current },
-  "section": section->{ title, "slug": slug.current }
+  "sections": sections[]->{ title, "slug": slug.current }
 }`;
 
 const article = await sanity.fetch<Article>(query, { slug });
@@ -97,14 +97,16 @@ const published = article.publishedAt
       {/* 2) Big title */}
       <h1 class="title">{article.title}</h1>
 
-      {/* 3) Section pill */}
-      {
-        article.section ? (
-          <Pill href={`/section/${article.section.slug}`} center>
-            {article.section.title}
-          </Pill>
-        ) : null
-      }
+      {/* 3) Section pills */}
+{article.sections && article.sections.length > 0 ? (
+  <div class="pills-row" style="justify-content: center;">
+  {article.sections.map((s) => (
+    <Pill href={`/section/${s.slug}`}>
+      {s.title}
+    </Pill>
+  ))}
+</div>
+) : null}
 
       {/* 4) Author */}
       {

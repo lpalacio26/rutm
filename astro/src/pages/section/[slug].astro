@@ -26,7 +26,7 @@ type Article = {
   image?: any;
 
   author?: { name: string; slug: string };
-  section?: { title: string; slug: string };
+  sections?: { title: string; slug: string }[];
 };
 
 // 1) Static paths for sections
@@ -55,7 +55,7 @@ const data = await sanity.fetch<{
     },
     "articles": *[
   _type=="article" &&
-  section->slug.current == $slug
+  $slug in sections[]->slug.current
 ] | order(publishedAt desc){
   title,
   excerpt,
@@ -66,7 +66,7 @@ const data = await sanity.fetch<{
   image,
   "slug": slug.current,
   "author": author->{ name, "slug": slug.current },
-  "section": section->{ title, "slug": slug.current }
+  "sections": sections[]->{ title, "slug": slug.current }
 }
 
   }`,

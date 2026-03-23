@@ -12,7 +12,7 @@ type ArticleListItem = {
   publishedAt?: string;
   slug: string;
   author: { name: string; slug: string };
-  section: { title: string; slug: string };
+  sections: { title: string; slug: string }[];
   heroImage?: SanityImage;
 };
 
@@ -42,7 +42,7 @@ const query = `*[_type=="article"] | order(publishedAt desc)[0...4]{
   "slug": slug.current,
   heroImage,
   "author": author->{ name, "slug": slug.current },
-  "section": section->{ title, "slug": slug.current }
+  "sections": sections[]->{ title, "slug": slug.current }
 }`;
 
 const olderQuery = `*[_type=="article"] | order(publishedAt desc)[4...20]{
@@ -52,7 +52,7 @@ const olderQuery = `*[_type=="article"] | order(publishedAt desc)[4...20]{
   "slug": slug.current,
   heroImage,
   "author": author->{ name, "slug": slug.current },
-  "section": section->{ title, "slug": slug.current }
+  "sections": sections[]->{ title, "slug": slug.current }
 }`;
 
 const olderArticles = await sanity.fetch<ArticleListItem[]>(olderQuery);
@@ -137,11 +137,15 @@ const fmtDate = (iso?: string) =>
               <a href={`/article/${hero.slug}`}>{hero.title}</a>
             </h2>
 
-            {hero.section ? (
-              <Pill href={`/section/${hero.section.slug}`} class="hover">
-                {hero.section.title}
-              </Pill>
-            ) : null}
+            {hero.sections && hero.sections.length > 0 ? (
+  <div class="pills-row">
+    {hero.sections.map((s) => (
+      <Pill href={`/section/${s.slug}`} class="hover">
+        {s.title}
+      </Pill>
+    ))}
+  </div>
+) : null}
 
             {hero.excerpt ? <p class="hero-excerpt">{hero.excerpt}</p> : null}
 
@@ -185,14 +189,15 @@ const fmtDate = (iso?: string) =>
                 <h3 class="card-title">
                   <a href={`/article/${rightBig.slug}`}>{rightBig.title}</a>
                 </h3>
-                {rightBig.section ? (
-                  <a
-                    class="pill hover"
-                    href={`/section/${rightBig.section.slug}`}
-                  >
-                    {rightBig.section.title}
-                  </a>
-                ) : null}
+                {rightBig.sections && rightBig.sections.length > 0 ? (
+  <div class="pills-row">
+    {rightBig.sections.map((s) => (
+      <a class="pill hover" href={`/section/${s.slug}`}>
+        {s.title}
+      </a>
+    ))}
+  </div>
+) : null}
                 {rightBig.excerpt ? (
                   <p class="card-excerpt">{rightBig.excerpt}</p>
                 ) : null}
@@ -236,14 +241,15 @@ const fmtDate = (iso?: string) =>
                 <h3 class="card-title card-title--oneLine">
                   <a href={`/article/${leftTop.slug}`}>{leftTop.title}</a>
                 </h3>
-                {leftTop.section ? (
-                  <a
-                    class="pill hover"
-                    href={`/section/${leftTop.section.slug}`}
-                  >
-                    {leftTop.section.title}
-                  </a>
-                ) : null}
+                {leftTop.sections && leftTop.sections.length > 0 ? (
+  <div class="pills-row">
+    {leftTop.sections.map((s) => (
+      <a class="pill hover" href={`/section/${s.slug}`}>
+        {s.title}
+      </a>
+    ))}
+  </div>
+) : null}
                 {leftTop.excerpt ? (
                   <p class="card-excerpt">{leftTop.excerpt}</p>
                 ) : null}
@@ -280,14 +286,15 @@ const fmtDate = (iso?: string) =>
                 <h3 class="card-title card-title--oneLine small">
                   <a href={`/article/${leftBottom.slug}`}>{leftBottom.title}</a>
                 </h3>
-                {leftBottom.section ? (
-                  <a
-                    class="pill hover"
-                    href={`/section/${leftBottom.section.slug}`}
-                  >
-                    {leftBottom.section.title}
-                  </a>
-                ) : null}
+               {leftBottom.sections && leftBottom.sections.length > 0 ? (
+  <div class="pills-row">
+    {leftBottom.sections.map((s) => (
+      <a class="pill hover" href={`/section/${s.slug}`}>
+        {s.title}
+      </a>
+    ))}
+  </div>
+) : null}
                 {leftBottom.excerpt ? (
                   <p class="card-excerpt">{leftBottom.excerpt}</p>
                 ) : null}
@@ -527,6 +534,8 @@ const fmtDate = (iso?: string) =>
       inset: 0;
       min-height: unset; /* let aspect-ratio control height */
     }
+
+
 
     /* Move exactly one copy width (50% because we duplicated once) */
     @keyframes banner-scroll {

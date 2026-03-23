@@ -15,7 +15,7 @@ type Article = {
   image?: any;
 
   author?: { name: string; slug: string };
-  section?: { title: string; slug: string };
+  sections?: { title: string; slug: string }[];
 };
 
 type Props = {
@@ -57,11 +57,17 @@ const fmtDateLong = (iso?: string) =>
                 <a href={`/article/${a.slug}`}>{a.title}</a>
               </h3>
 
-              {showSectionPill && a.section ? (
-                <Pill href={`/section/${a.section.slug}`} class="hover">
-                  {a.section.title}
-                </Pill>
-              ) : null}
+            {showSectionPill && a.sections && a.sections.length > 0 ? (
+  <div class="pills-row">
+    {a.sections.map((s) => (
+      <Pill href={`/section/${s.slug}`} class="hover">
+        {s.title}
+      </Pill>
+    ))}
+  </div>
+) : null}
+
+
 
               {a.excerpt ? <p class="older-excerpt">{a.excerpt}</p> : null}
 

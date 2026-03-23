@@ -97,11 +97,11 @@ export default defineType({
       validation: (Rule) => Rule.required(),
     }),
     defineField({
-      name: 'section',
-      title: 'Section',
-      type: 'reference',
-      to: [{type: 'section'}],
-      validation: (Rule) => Rule.required(),
+      name: 'sections',
+      title: 'Sections',
+      type: 'array',
+      of: [{type: 'reference', to: [{type: 'section'}]}],
+      validation: (Rule) => Rule.required().min(1),
     }),
     defineField({
       name: 'themes',
