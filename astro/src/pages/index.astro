@@ -31,7 +31,6 @@ type HomePage = {
 const homeQuery = `*[_type=="homepage"][0]{ marqueeText, marqueeSpeed }`;
 const home = await sanity.fetch<HomePage>(homeQuery);
 
-
 const marqueeText = home?.marqueeText ?? "PERFECTLY DAUGHTER •";
 const marqueeSpeed = home?.marqueeSpeed ?? 18;
 
@@ -54,8 +53,11 @@ const olderQuery = `*[_type=="article"] | order(publishedAt desc)[4...20]{
   "author": author->{ name, "slug": slug.current },
   "sections": sections[]->{ title, "slug": slug.current }
 }`;
-
-const olderArticles = await sanity.fetch<ArticleListItem[]>(olderQuery);
+// src/pages/index.astro
+const [articles, olderArticles] = await Promise.all([
+  sanity.fetch<ArticleListItem[]>(query),
+  sanity.fetch<ArticleListItem[]>(olderQuery),
+]);
 
 const fmtDateLong = (iso?: string) =>
   iso
@@ -65,8 +67,6 @@ const fmtDateLong = (iso?: string) =>
         day: "2-digit",
       })
     : "";
-
-const articles = await sanity.fetch<ArticleListItem[]>(query);
 
 const hero = articles[0];
 
@@ -138,14 +138,14 @@ const fmtDate = (iso?: string) =>
             </h2>
 
             {hero.sections && hero.sections.length > 0 ? (
-  <div class="pills-row">
-    {hero.sections.map((s) => (
-      <Pill href={`/section/${s.slug}`} class="hover">
-        {s.title}
-      </Pill>
-    ))}
-  </div>
-) : null}
+              <div class="pills-row">
+                {hero.sections.map((s) => (
+                  <Pill href={`/section/${s.slug}`} class="hover">
+                    {s.title}
+                  </Pill>
+                ))}
+              </div>
+            ) : null}
 
             {hero.excerpt ? <p class="hero-excerpt">{hero.excerpt}</p> : null}
 
@@ -190,14 +190,14 @@ const fmtDate = (iso?: string) =>
                   <a href={`/article/${rightBig.slug}`}>{rightBig.title}</a>
                 </h3>
                 {rightBig.sections && rightBig.sections.length > 0 ? (
-  <div class="pills-row">
-    {rightBig.sections.map((s) => (
-      <a class="pill hover" href={`/section/${s.slug}`}>
-        {s.title}
-      </a>
-    ))}
-  </div>
-) : null}
+                  <div class="pills-row">
+                    {rightBig.sections.map((s) => (
+                      <a class="pill hover" href={`/section/${s.slug}`}>
+                        {s.title}
+                      </a>
+                    ))}
+                  </div>
+                ) : null}
                 {rightBig.excerpt ? (
                   <p class="card-excerpt">{rightBig.excerpt}</p>
                 ) : null}
@@ -242,14 +242,14 @@ const fmtDate = (iso?: string) =>
                   <a href={`/article/${leftTop.slug}`}>{leftTop.title}</a>
                 </h3>
                 {leftTop.sections && leftTop.sections.length > 0 ? (
-  <div class="pills-row">
-    {leftTop.sections.map((s) => (
-      <a class="pill hover" href={`/section/${s.slug}`}>
-        {s.title}
-      </a>
-    ))}
-  </div>
-) : null}
+                  <div class="pills-row">
+                    {leftTop.sections.map((s) => (
+                      <a class="pill hover" href={`/section/${s.slug}`}>
+                        {s.title}
+                      </a>
+                    ))}
+                  </div>
+                ) : null}
                 {leftTop.excerpt ? (
                   <p class="card-excerpt">{leftTop.excerpt}</p>
                 ) : null}
@@ -260,6 +260,13 @@ const fmtDate = (iso?: string) =>
                   >
                     {leftTop.author.name}
                   </a>
+                ) : null}
+                {leftTop.publishedAt ? (
+                  <div class="meta">
+                    <time datetime={leftTop.publishedAt}>
+                      {fmtDate(leftTop.publishedAt)}
+                    </time>
+                  </div>
                 ) : null}
               </div>
             </article>
@@ -286,15 +293,15 @@ const fmtDate = (iso?: string) =>
                 <h3 class="card-title card-title--oneLine small">
                   <a href={`/article/${leftBottom.slug}`}>{leftBottom.title}</a>
                 </h3>
-               {leftBottom.sections && leftBottom.sections.length > 0 ? (
-  <div class="pills-row">
-    {leftBottom.sections.map((s) => (
-      <a class="pill hover" href={`/section/${s.slug}`}>
-        {s.title}
-      </a>
-    ))}
-  </div>
-) : null}
+                {leftBottom.sections && leftBottom.sections.length > 0 ? (
+                  <div class="pills-row">
+                    {leftBottom.sections.map((s) => (
+                      <a class="pill hover" href={`/section/${s.slug}`}>
+                        {s.title}
+                      </a>
+                    ))}
+                  </div>
+                ) : null}
                 {leftBottom.excerpt ? (
                   <p class="card-excerpt">{leftBottom.excerpt}</p>
                 ) : null}
@@ -306,6 +313,13 @@ const fmtDate = (iso?: string) =>
                     {leftBottom.author.name}
                   </a>
                 ) : null}
+                {leftBottom.publishedAt ? (
+                  <div class="meta">
+                    <time datetime={leftBottom.publishedAt}>
+                      {fmtDate(leftBottom.publishedAt)}
+                    </time>
+                  </div>
+                ) : null}
               </div>
             </article>
           ) : null
@@ -314,27 +328,27 @@ const fmtDate = (iso?: string) =>
     </section>
     <Marquee text={marqueeText} speed={marqueeSpeed} />
     <ArticleGrid articles={olderArticles} />
-<script>
-  function setupMarquee() {
-    const el = document.querySelector(".banner-track");
-    if (!(el instanceof HTMLElement)) return;
+    <script>
+      function setupMarquee() {
+        const el = document.querySelector(".banner-track");
+        if (!(el instanceof HTMLElement)) return;
 
-    const speed = Number(el.dataset.speed || 18);
-    const width = el.scrollWidth / 2;
-    const duration = width / speed;
+        const speed = Number(el.dataset.speed || 18);
+        const width = el.scrollWidth / 2;
+        const duration = width / speed;
 
-    console.log("marquee:", { speed, width, duration }); // add this
-    el.style.animationDuration = `${duration}s`;
-  }
+        console.log("marquee:", { speed, width, duration }); // add this
+        el.style.animationDuration = `${duration}s`;
+      }
 
-  document.fonts.ready.then(() => {
-    // wrap in rAF to ensure layout is computed after font load
-    requestAnimationFrame(() => {
-      setupMarquee();
-      window.addEventListener("resize", setupMarquee);
-    });
-  });
-</script>
+      document.fonts.ready.then(() => {
+        // wrap in rAF to ensure layout is computed after font load
+        requestAnimationFrame(() => {
+          setupMarquee();
+          window.addEventListener("resize", setupMarquee);
+        });
+      });
+    </script>
   </main>
 
   <style>
@@ -534,8 +548,6 @@ const fmtDate = (iso?: string) =>
       inset: 0;
       min-height: unset; /* let aspect-ratio control height */
     }
-
-
 
     /* Move exactly one copy width (50% because we duplicated once) */
     @keyframes banner-scroll {
