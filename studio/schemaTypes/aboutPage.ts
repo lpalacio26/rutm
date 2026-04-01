@@ -4,6 +4,11 @@ export default defineType({
   name: "aboutPage",
   title: "About Page",
   type: "document",
+  preview: {
+    prepare() {
+      return { title: "About" };
+    },
+  },
   fields: [
     defineField({
       name: "definitionBlocks",
