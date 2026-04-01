@@ -296,3 +296,25 @@ hr {
   background-size: 28px 28px;
 }
 
+.nav__social {
+  border-top: 2px solid var(--text-color);
+  padding: 12px 14px 14px;
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+  box-sizing: border-box;
+}
+.nav__social {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .nav__social {
+    border-top: 2px solid var(--text-color);
+    padding: 12px 14px 14px;
+    display: flex;
+    justify-content: flex-end;
+    width: 100%;
+    box-sizing: border-box;
+  }
+}

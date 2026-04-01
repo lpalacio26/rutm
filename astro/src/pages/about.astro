@@ -6,14 +6,16 @@ import { portableTextToHtml } from "../lib/portableText";
 type AboutPage = {
   definitionBlocks: string[];
   dictionarySource?: string;
-  body?: any[];
+  bodyEN?: any[];
+  bodyFR?: any[];
 };
 
 const page = await sanity.fetch<AboutPage>(
   `*[_type == "aboutPage"][0]{
     definitionBlocks,
     dictionarySource,
-    body
+    bodyEN,
+    bodyFR
   }`
 );
 ---
@@ -23,8 +25,9 @@ const page = await sanity.fetch<AboutPage>(
   <article class="about">
     <header class="about__header">
       <p class="about__label">RÜTM: Rhythm in Estonian</p>
-      {page?.definitionBlocks?.map((block) => (
+      {page?.definitionBlocks?.map((block, i) => (
         <blockquote class="about__definition">
+          <span class="about__definition-num">0{i + 1}</span>
           <p>{block}</p>
         </blockquote>
       ))}
@@ -33,35 +36,70 @@ const page = await sanity.fetch<AboutPage>(
       )}
     </header>
 
-    {page?.body && (
-      <div
-        class="about__body prose"
-        set:html={portableTextToHtml(page.body)}
-      />
+    <hr class="about__divider" />
+
+    {(page?.bodyEN || page?.bodyFR) && (
+      <div class="about__columns">
+        <div class="about__col">
+          <span class="about__lang">EN</span>
+          {page?.bodyEN && (
+            <div class="about__body prose" set:html={portableTextToHtml(page.bodyEN)} />
+          )}
+        </div>
+        <div class="about__col">
+          <span class="about__lang">FR</span>
+          {page?.bodyFR && (
+            <div class="about__body prose" set:html={portableTextToHtml(page.bodyFR)} />
+          )}
+        </div>
+      </div>
     )}
   </article>
 </BaseLayout>
 
 <style>
   .about {
-    max-width: 720px;
+    max-width: 1100px;
     margin: 0 auto;
-    padding: 60px 24px 100px;
+    padding: 32px 24px 100px;
+  }
+
+  .about__header {
+    background-color: var(--text-color);
+    color: var(--bg-color);
+    padding: 2rem;
+    margin: 0 -24px 0;
   }
 
   .about__label {
     font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 0.04em;
-    margin-bottom: 1.5rem;
+    letter-spacing: 0.06em;
+    font-size: 0.75rem;
+    margin-bottom: 2rem;
+    opacity: 0.5;
   }
 
   .about__definition {
-    border-left: 3px solid var(--text-color);
-    padding-left: 1.25rem;
-    margin: 0 0 1rem 0;
+    display: flex;
+    gap: 1.25rem;
+    align-items: baseline;
+    margin: 0 0 1.25rem 0;
+    padding: 0;
+    border: none;
     font-style: italic;
     font-weight: 700;
+    font-size: 1.1rem;
+  }
+
+  .about__definition-num {
+    font-style: normal;
+    font-weight: 800;
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    opacity: 0.4;
+    flex-shrink: 0;
+    padding-top: 3px;
   }
 
   .about__definition p {
@@ -69,21 +107,55 @@ const page = await sanity.fetch<AboutPage>(
   }
 
   .about__source {
-    font-style: italic;
-    opacity: 0.7;
-    margin: 1.5rem 0 3rem;
+    font-variant: small-caps;
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
+    opacity: 0.5;
+    margin: 1.5rem 0 0;
+    font-style: normal;
+  }
+
+  .about__divider {
+    margin: 2.5rem 0;
+  }
+
+  .about__columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+  }
+
+  .about__lang {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    opacity: 0.4;
+    margin-bottom: 1rem;
   }
 
   .about__body {
-    line-height: 1.7;
-    font-size: 1.05rem;
+    line-height: 1.6;
+    font-size: 1.2rem;
+  }
+
+  @media (max-width: 640px) {
+    .about__columns {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+
+    .about__header {
+      margin: 0 -24px;
+    }
   }
 
   h1 {
-  text-transform: uppercase;
-  text-align: center;
-  border-top: 3px solid;
-  border-bottom: 3px solid;
-  padding: 25px 0;
-}
+    text-transform: uppercase;
+    text-align: center;
+    border-top: 3px solid;
+    border-bottom: 3px solid;
+    padding: 25px 0;
+  }
 </style>

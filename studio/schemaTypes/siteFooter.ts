@@ -4,6 +4,11 @@ export default defineType({
   name: "siteFooter",
   title: "Site Footer",
   type: "document",
+  preview: {
+    prepare() {
+      return { title: "Footer" };
+    },
+  },
   fields: [
     defineField({
       name: "links",
