@@ -5,6 +5,12 @@ const pathname = Astro.url.pathname;
 const sections = await sanity.fetch<{ title: string; slug: string }[]>(
   `*[_type=="section"] | order(order asc){ title, "slug": slug.current }`
 );
+
+const footer = await sanity.fetch<{
+  links: { label: string; url: string }[];
+}>(
+  `*[_type == "siteFooter"][0]{ links }`
+);
 ---
 
 <header class="site-header">
@@ -94,6 +100,16 @@ const sections = await sanity.fetch<{ title: string; slug: string }[]>(
           })
         }
       </div>
+
+      {footer?.links?.length > 0 && (
+    <div class="nav__footer-links">
+      {footer.links.map((link) => (
+        <a href={link.url} class="nav__link nav__link--footer">
+          {link.label}
+        </a>
+      ))}
+    </div>
+  )}
     </div>
   </nav>
   </header>

@@ -1,0 +1,68 @@
+---
+import { sanity } from "../lib/sanity";
+
+const footer = await sanity.fetch<{
+  links: { label: string; url: string }[];
+}>(
+  `*[_type == "siteFooter"][0]{ links }`
+);
+
+const pathname = Astro.url.pathname;
+---
+
+{footer?.links?.length > 0 && (
+  <footer class="site-footer">
+    <nav aria-label="Footer">
+      {footer.links.map((link) => {
+        const isActive = pathname === link.url;
+        return (
+  <a href={link.url} class="footer__link" aria-current={isActive ? "page" : undefined}>
+    {link.label}
+  </a>
+);
+      })}
+    </nav>
+  </footer>
+)}
+
+<style>
+  .site-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    background: var(--accent-color, #0000ff); /* blue, swap for your token */
+    height: 36px;
+    display: flex;
+    align-items: center;
+    padding: 0 1.5rem;
+  }
+
+  nav {
+    display: flex;
+    gap: 2rem;
+  }
+
+  .footer__link {
+    color: var(--bg-color);
+    text-decoration: none;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    opacity: 0.7;
+    transition: opacity 0.15s ease;
+  }
+
+  .footer__link:hover,
+  .footer__link[aria-current="page"] {
+    opacity: 1;
+  }
+
+  @media (max-width: 768px) {
+  .site-footer {
+    display: none;
+  }
+}
+</style>

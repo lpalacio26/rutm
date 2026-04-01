@@ -1,0 +1,89 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { sanity } from "../lib/sanity";
+import { portableTextToHtml } from "../lib/portableText";
+
+type AboutPage = {
+  definitionBlocks: string[];
+  dictionarySource?: string;
+  body?: any[];
+};
+
+const page = await sanity.fetch<AboutPage>(
+  `*[_type == "aboutPage"][0]{
+    definitionBlocks,
+    dictionarySource,
+    body
+  }`
+);
+---
+
+<BaseLayout title="About — RÜTM">
+  <h1>About</h1>
+  <article class="about">
+    <header class="about__header">
+      <p class="about__label">RÜTM: Rhythm in Estonian</p>
+      {page?.definitionBlocks?.map((block) => (
+        <blockquote class="about__definition">
+          <p>{block}</p>
+        </blockquote>
+      ))}
+      {page?.dictionarySource && (
+        <p class="about__source">{page.dictionarySource}</p>
+      )}
+    </header>
+
+    {page?.body && (
+      <div
+        class="about__body prose"
+        set:html={portableTextToHtml(page.body)}
+      />
+    )}
+  </article>
+</BaseLayout>
+
+<style>
+  .about {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 60px 24px 100px;
+  }
+
+  .about__label {
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 1.5rem;
+  }
+
+  .about__definition {
+    border-left: 3px solid var(--text-color);
+    padding-left: 1.25rem;
+    margin: 0 0 1rem 0;
+    font-style: italic;
+    font-weight: 700;
+  }
+
+  .about__definition p {
+    margin: 0;
+  }
+
+  .about__source {
+    font-style: italic;
+    opacity: 0.7;
+    margin: 1.5rem 0 3rem;
+  }
+
+  .about__body {
+    line-height: 1.7;
+    font-size: 1.05rem;
+  }
+
+  h1 {
+  text-transform: uppercase;
+  text-align: center;
+  border-top: 3px solid;
+  border-bottom: 3px solid;
+  padding: 25px 0;
+}
+</style>

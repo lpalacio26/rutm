@@ -1,0 +1,69 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { sanity } from "../lib/sanity";
+import { portableTextToHtml } from "../lib/portableText";
+import Marquee from "../components/Marquee.astro";
+
+type TellYoursPage = {
+  marqueeText: string;
+  marqueeSpeed?: number;
+  body?: any[];
+};
+
+const page = await sanity.fetch<TellYoursPage>(
+  `*[_type == "tellYoursPage"][0]{
+    marqueeText,
+    marqueeSpeed,
+    body
+  }`
+);
+
+const marqueeText = page?.marqueeText ?? "TELL YOURS";
+const marqueeSpeed = page?.marqueeSpeed ?? 40;
+---
+
+<BaseLayout title="Tell Yours — RÜTM">
+  <h1>Tell Yours</h1>
+
+  <article class="tell-yours">
+    {page?.body && (
+      <div
+        class="tell-yours__body prose"
+        set:html={portableTextToHtml(page.body)}
+      />
+    )}
+
+  </article>
+        <Marquee text={marqueeText} speed={marqueeSpeed} />
+
+</BaseLayout>
+
+<style>
+  .tell-yours {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 20px 24px 100px;
+  }
+
+  .tell-yours__body {
+    line-height: 1.7;
+    font-size: 1.05rem;
+    margin-bottom: 2rem;
+  }
+
+  .tell-yours__email {
+    display: inline-block;
+    font-weight: 800;
+    color: var(--text-color);
+    text-decoration: underline;
+    letter-spacing: 0.02em;
+  }
+
+  h1 {
+  text-transform: uppercase;
+  text-align: center;
+  border-top: 3px solid;
+  border-bottom: 3px solid;
+  padding: 25px 0;
+}
+</style>

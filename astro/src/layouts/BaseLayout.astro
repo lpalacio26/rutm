@@ -2,6 +2,7 @@
 import Navbar from "../components/Navbar.astro";
 import "../styles/global.css";
 import "../styles/articleGrid.css";
+import Footer from "../components/Footer.astro";
 
 const { title = "RÜTM" } = Astro.props;
 
@@ -21,5 +22,6 @@ const { title = "RÜTM" } = Astro.props;
     <main>
       <slot />
     </main>
+    <Footer />
   </body>
 </html>

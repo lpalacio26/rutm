@@ -113,6 +113,11 @@ a {
   display: none;
 }
 
+.nav__footer-links {
+  display: none;
+}
+
+
 /* Let links wrap on medium screens instead of overflowing */
 @media (max-width: 900px) {
   .nav {
@@ -127,6 +132,7 @@ a {
 
 /* Mobile: collapse into menu */
 @media (max-width: 640px) {
+
   .site-header {
     z-index: 1000;
     padding-top: 0px;
@@ -220,6 +226,18 @@ a {
   .site-logo--desktop {
     display: none;
   }
+
+  .nav__footer-links {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+  padding: 14px 14px 14px;
+  width: 100%;
+  box-sizing: border-box;
+  border-top: 2px solid var(--text-color);
+  margin-top: 4px;
+}
 }
 
 hr {
@@ -277,3 +295,4 @@ hr {
   );
   background-size: 28px 28px;
 }
+
