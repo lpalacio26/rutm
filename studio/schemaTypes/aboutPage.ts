@@ -19,10 +19,37 @@ export default defineType({
       initialValue: "Cambridge Advanced Learner's Dictionary & Thesaurus © Cambridge University Press",
     }),
     defineField({
-      name: "body",
-      title: "Body text",
-      type: "array",
-      of: [{ type: "block" }],
-    }),
+  name: "body",
+  title: "Body text",
+  type: "array",
+  of: [
+    {
+      type: "block",
+      marks: {
+        annotations: [
+          {
+            name: "link",
+            type: "object",
+            title: "Link",
+            fields: [{ name: "href", type: "url", title: "URL" }],
+          },
+          {
+            name: "footnote",
+            type: "object",
+            title: "Footnote",
+            fields: [
+              {
+                name: "note",
+                title: "Note",
+                type: "text",
+                rows: 3,
+              },
+            ],
+          },
+        ],
+      },
+    },
+  ],
+}),
   ],
 })
