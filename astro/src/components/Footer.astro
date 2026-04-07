@@ -3,7 +3,12 @@ import { sanity } from "../lib/sanity";
 
 const footer = await sanity.fetch<{
   links: { label: string; url: string }[];
-}>(`*[_type == "siteFooter"][0]{ links }`);
+  socialLinks: { name: string; url: string; order: number }[];
+}>(`*[_type == "siteFooter"][0]{ links, socialLinks }`);
+
+const sortedSocialLinks = (footer?.socialLinks ?? []).sort(
+  (a, b) => a.order - b.order
+);
 
 const pathname = Astro.url.pathname;
 ---
@@ -21,16 +26,20 @@ const pathname = Astro.url.pathname;
       })}
     </nav>
 
-    <div class="footer__social">
-      
-       <a href="https://instagram.com/rutmmag"
-        class="footer__link"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        Instagram ↗
-      </a>
-    </div>
+    {sortedSocialLinks.length > 0 && (
+      <div class="footer__social">
+        {sortedSocialLinks.map((link) => (
+          <a
+            href={link.url}
+            class="footer__link footer__link--social"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {link.name} ↗
+          </a>
+        ))}
+      </div>
+    )}
   </footer>
 )}
 
@@ -68,6 +77,10 @@ const pathname = Astro.url.pathname;
   .footer__link:hover,
   .footer__link[aria-current="page"] {
     opacity: 1;
+  }
+
+  .footer__link--social {
+    margin-left: 15px;
   }
 
   @media (max-width: 768px) {

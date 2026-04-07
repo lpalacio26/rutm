@@ -1,0 +1,195 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { sanity } from "../lib/sanity";
+import { portableTextToHtml } from "../lib/portableText";
+import Marquee from "../components/Marquee.astro";
+
+type NewsletterPage = {
+  marqueeText: string;
+  marqueeSpeed?: number;
+  body?: any[];
+};
+
+const page = await sanity.fetch<NewsletterPage>(
+  `*[_type == "newsletterPage"][0]{
+    marqueeText,
+    marqueeSpeed,
+    body
+  }`
+);
+
+const marqueeText = page?.marqueeText ?? "NEWSLETTER";
+const marqueeSpeed = page?.marqueeSpeed ?? 40;
+---
+
+<BaseLayout title="Newsletter — RÜTM">
+  <h1>Newsletter</h1>
+
+  <article class="newsletter">
+    {page?.body && (
+      <div
+        class="newsletter__body prose"
+        set:html={portableTextToHtml(page.body)}
+      />
+    )}
+
+    <div class="newsletter__form" id="newsletter-form">
+      <div class="newsletter__row">
+        <input
+          class="newsletter__input"
+          type="email"
+          id="newsletter-email"
+          placeholder="your@email.com"
+          autocomplete="email"
+          required
+          aria-label="Email address"
+        />
+        <button class="newsletter__btn" id="newsletter-submit" type="button">
+          Subscribe
+        </button>
+      </div>
+      <p class="newsletter__feedback" id="newsletter-feedback" aria-live="polite"></p>
+    </div>
+  </article>
+
+  <Marquee text={marqueeText} speed={marqueeSpeed} />
+</BaseLayout>
+
+<script>
+  const input = document.getElementById("newsletter-email") as HTMLInputElement;
+  const btn = document.getElementById("newsletter-submit") as HTMLButtonElement;
+  const feedback = document.getElementById("newsletter-feedback") as HTMLParagraphElement;
+
+  btn?.addEventListener("click", async () => {
+    const email = input?.value.trim();
+    if (!email) return;
+
+    btn.disabled = true;
+    btn.textContent = "...";
+    feedback.textContent = "";
+    feedback.dataset.state = "";
+
+    try {
+      const res = await fetch("/api/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.ok) {
+        feedback.textContent = "You're in. Welcome!";
+        feedback.dataset.state = "success";
+        input.value = "";
+      } else {
+        feedback.textContent = data.error ?? "Something went wrong. Please try again.";
+        feedback.dataset.state = "error";
+      }
+    } catch {
+      feedback.textContent = "Something went wrong. Please try again.";
+      feedback.dataset.state = "error";
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "Subscribe";
+    }
+  });
+
+  // Allow submitting with Enter key
+  input?.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") btn?.click();
+  });
+</script>
+
+<style>
+  .newsletter {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 20px 24px 100px;
+  }
+
+  .newsletter__body {
+    line-height: 1.7;
+    font-size: 1.05rem;
+    margin-bottom: 2rem;
+  }
+
+  .newsletter__form {
+    margin-top: 2rem;
+  }
+
+  .newsletter__row {
+    display: flex;
+    gap: 0;
+    border: 3px solid var(--text-color);
+  }
+
+  .newsletter__input {
+    flex: 1;
+    padding: 0.65rem 0.85rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    font-family: inherit;
+    letter-spacing: 0.03em;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text-color);
+    min-width: 0;
+  }
+
+  .newsletter__input::placeholder {
+    opacity: 0.35;
+    font-weight: 700;
+  }
+
+  .newsletter__btn {
+    padding: 0.65rem 1.25rem;
+    font-size: 0.75rem;
+    font-weight: 800;
+    font-family: inherit;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: var(--text-color);
+    color: var(--bg-color);
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+    flex-shrink: 0;
+  }
+
+  .newsletter__btn:hover {
+    opacity: 0.8;
+  }
+
+  .newsletter__btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .newsletter__feedback {
+    margin-top: 0.6rem;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    min-height: 1.2em;
+  }
+
+  .newsletter__feedback[data-state="success"] {
+    opacity: 0.7;
+  }
+
+  .newsletter__feedback[data-state="error"] {
+    opacity: 1;
+    text-decoration: underline;
+  }
+
+  h1 {
+    text-transform: uppercase;
+    text-align: center;
+    border-top: 3px solid;
+    border-bottom: 3px solid;
+    padding: 25px 0;
+  }
+</style>

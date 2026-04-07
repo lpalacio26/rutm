@@ -8,9 +8,11 @@ import imageBlock from "./imageBlock";
 import aboutPage from "./aboutPage";
 import tellYoursPage from "./tellYoursPage";
 import siteFooter from "./siteFooter";
+import newsletterPage from "./newsletterPage";
+
 
 
 export const schemaTypes = [
   article, author, section, theme, homepage,
-  pullQuote, imageBlock, aboutPage, tellYoursPage, siteFooter
+  pullQuote, imageBlock, aboutPage, tellYoursPage, siteFooter, newsletterPage
 ];

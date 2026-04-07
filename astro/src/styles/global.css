@@ -297,14 +297,6 @@ hr {
 }
 
 .nav__social {
-  border-top: 2px solid var(--text-color);
-  padding: 12px 14px 14px;
-  display: flex;
-  justify-content: flex-end;
-  width: 100%;
-  box-sizing: border-box;
-}
-.nav__social {
   display: none;
 }
 
@@ -313,7 +305,9 @@ hr {
     border-top: 2px solid var(--text-color);
     padding: 12px 14px 14px;
     display: flex;
-    justify-content: flex-end;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
     width: 100%;
     box-sizing: border-box;
   }
