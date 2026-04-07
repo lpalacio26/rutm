@@ -1,5 +1,6 @@
 ---
 import { sanity } from "../lib/sanity";
+import ColorPicker from "./ColorPicker.astro";
 const pathname = Astro.url.pathname;
 
 const sections = await sanity.fetch<{ title: string; slug: string }[]>(
@@ -96,6 +97,7 @@ const footer = await sanity.fetch<{
           Instagram ↗
         </a>
       </div>
+      <ColorPicker variant="mobile" />
     </div>
   </nav>
 </header>

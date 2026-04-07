@@ -1,0 +1,306 @@
+---
+const { variant = 'desktop' } = Astro.props;
+---
+
+<div class={`cp cp--${variant}`}>
+  <button class="cp__btn" aria-label="Change site color" title="Change site color">
+    <span class="cp__swatch"></span>
+  </button>
+  <div class="cp__popup" hidden>
+    <div class="cp__wheel"></div>
+    <button class="cp__reset">Default</button>
+  </div>
+</div>
+
+<style>
+  .cp {
+    position: relative;
+    z-index: 10000;
+  }
+
+  .cp--desktop {
+    position: fixed;
+    top: 18px;
+    right: 18px;
+  }
+
+  .cp--mobile {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 12px 14px;
+    border-top: 2px solid var(--text-color);
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .cp__btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid var(--text-color);
+    background: transparent;
+    padding: 2px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .cp__swatch {
+    display: block;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--text-color);
+    pointer-events: none;
+  }
+
+  .cp__popup {
+    position: absolute;
+    right: 0;
+    background: var(--bg-color);
+    border: 2px solid var(--text-color);
+    border-bottom: 5px solid var(--text-color);
+    border-radius: 2px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .cp--desktop .cp__popup {
+    top: calc(100% + 8px);
+  }
+
+  .cp--mobile .cp__popup {
+    bottom: calc(100% + 8px);
+  }
+
+  .cp__popup[hidden] {
+    display: none;
+  }
+
+  .cp__wheel {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: conic-gradient(
+      hsl(0, 100%, 42%),
+      hsl(45, 100%, 42%),
+      hsl(90, 100%, 42%),
+      hsl(135, 100%, 42%),
+      hsl(180, 100%, 42%),
+      hsl(225, 100%, 42%),
+      hsl(270, 100%, 42%),
+      hsl(315, 100%, 42%),
+      hsl(360, 100%, 42%)
+    );
+    cursor: crosshair;
+    position: relative;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  /* inner hole */
+  .cp__wheel::after {
+    content: '';
+    position: absolute;
+    inset: 30px;
+    border-radius: 50%;
+    background: var(--bg-color);
+    pointer-events: none;
+  }
+
+  .cp__reset {
+    background: transparent;
+    border: 2px solid var(--text-color);
+    border-bottom: 4px solid var(--text-color);
+    border-radius: 2px;
+    color: var(--text-color);
+    font: inherit;
+    font-size: 13px;
+    font-weight: bolder;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    padding: 6px 10px;
+    width: 100%;
+    text-align: center;
+    line-height: 1;
+  }
+
+  .cp__reset:hover {
+    background: var(--text-color);
+    color: var(--bg-color);
+  }
+
+  /* hide desktop picker on mobile, mobile picker on desktop */
+  @media (max-width: 640px) {
+    .cp--desktop {
+      display: none;
+    }
+  }
+
+  @media (min-width: 641px) {
+    .cp--mobile {
+      display: none;
+    }
+  }
+</style>
+
+<script is:inline>
+  (function () {
+    if (window.__cpInit) return;
+    window.__cpInit = true;
+
+    var DEFAULT_COLOR = '#0022ff';
+
+    function applyColor(hue) {
+      var color = 'hsl(' + hue + ', 100%, 42%)';
+      document.documentElement.style.setProperty('--text-color', color);
+
+      var sel = document.getElementById('cp-sel');
+      if (!sel) {
+        sel = document.createElement('style');
+        sel.id = 'cp-sel';
+        document.head.appendChild(sel);
+      }
+      sel.textContent = '::selection { background-color: ' + color + '; color: #fafafa; }';
+
+      document.querySelectorAll('.cp__swatch').forEach(function (s) {
+        s.style.background = color;
+      });
+
+      localStorage.setItem('rutm-hue', String(hue));
+    }
+
+    function resetColor() {
+      localStorage.removeItem('rutm-hue');
+      document.documentElement.style.removeProperty('--text-color');
+
+      var sel = document.getElementById('cp-sel');
+      if (sel) sel.remove();
+
+      document.querySelectorAll('.cp__swatch').forEach(function (s) {
+        s.style.background = DEFAULT_COLOR;
+      });
+    }
+
+    // returns hue (0-359) from a pointer event relative to wheel, or null if outside ring
+    function hueFromPointer(clientX, clientY, wheel, requireRing) {
+      var rect = wheel.getBoundingClientRect();
+      var cx = rect.left + rect.width / 2;
+      var cy = rect.top + rect.height / 2;
+      var dx = clientX - cx;
+      var dy = clientY - cy;
+
+      if (requireRing) {
+        var dist = Math.sqrt(dx * dx + dy * dy);
+        var outerR = rect.width / 2;
+        var innerR = outerR * 0.5;
+        if (dist < innerR || dist > outerR) return null;
+      }
+
+      var angle = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
+      if (angle < 0) angle += 360;
+      return Math.round(angle) % 360;
+    }
+
+    var draggingWheel = null;
+
+    function initPicker(root) {
+      var btn = root.querySelector('.cp__btn');
+      var popup = root.querySelector('.cp__popup');
+      var wheel = root.querySelector('.cp__wheel');
+      var resetBtn = root.querySelector('.cp__reset');
+
+      // toggle popup open/close
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var isOpen = !popup.hidden;
+        document.querySelectorAll('.cp__popup').forEach(function (p) { p.hidden = true; });
+        popup.hidden = isOpen;
+      });
+
+      // prevent popup from closing when clicking inside it
+      popup.addEventListener('click', function (e) {
+        e.stopPropagation();
+      });
+
+      // reset button
+      resetBtn.addEventListener('click', function () {
+        resetColor();
+        popup.hidden = true;
+      });
+
+      // --- mouse drag ---
+      wheel.addEventListener('mousedown', function (e) {
+        e.preventDefault();
+        var hue = hueFromPointer(e.clientX, e.clientY, wheel, true);
+        if (hue === null) return;
+        draggingWheel = wheel;
+        applyColor(hue);
+      });
+
+      // --- touch drag ---
+      wheel.addEventListener('touchstart', function (e) {
+        var t = e.touches[0];
+        var hue = hueFromPointer(t.clientX, t.clientY, wheel, true);
+        if (hue === null) return;
+        e.preventDefault();
+        applyColor(hue);
+      }, { passive: false });
+
+      wheel.addEventListener('touchmove', function (e) {
+        var t = e.touches[0];
+        var hue = hueFromPointer(t.clientX, t.clientY, wheel, false);
+        if (hue === null) return;
+        e.preventDefault();
+        applyColor(hue);
+      }, { passive: false });
+
+      wheel.addEventListener('touchend', function () {
+        popup.hidden = true;
+      });
+    }
+
+    // global mousemove/mouseup for drag outside the wheel element
+    document.addEventListener('mousemove', function (e) {
+      if (!draggingWheel) return;
+      var hue = hueFromPointer(e.clientX, e.clientY, draggingWheel, false);
+      if (hue !== null) applyColor(hue);
+    });
+
+    document.addEventListener('mouseup', function () {
+      draggingWheel = null;
+    });
+
+    // close popups on outside click
+    document.addEventListener('click', function () {
+      document.querySelectorAll('.cp__popup').forEach(function (p) { p.hidden = true; });
+    });
+
+    function initAll() {
+      document.querySelectorAll('.cp').forEach(initPicker);
+
+      var saved = localStorage.getItem('rutm-hue');
+      document.querySelectorAll('.cp__swatch').forEach(function (s) {
+        s.style.background = saved !== null
+          ? 'hsl(' + saved + ', 100%, 42%)'
+          : DEFAULT_COLOR;
+      });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initAll);
+    } else {
+      initAll();
+    }
+
+    window.__cpApply = applyColor;
+    window.__cpReset = resetColor;
+  })();
+</script>

@@ -1,5 +1,6 @@
 ---
 import Navbar from "../components/Navbar.astro";
+import ColorPicker from "../components/ColorPicker.astro";
 import "../styles/global.css";
 import "../styles/articleGrid.css";
 import Footer from "../components/Footer.astro";
@@ -16,9 +17,24 @@ const { title = "RÜTM" } = Astro.props;
   <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <title>{title}</title>
     <script defer src="https://cloud.umami.is/script.js" data-website-id="5637ef66-f943-496d-8b87-0a42d66ae4b3"></script>
+    <!-- apply saved color before first paint to avoid flash -->
+    <script is:inline>
+      (function () {
+        var hue = localStorage.getItem('rutm-hue');
+        if (hue !== null) {
+          var color = 'hsl(' + hue + ', 100%, 42%)';
+          document.documentElement.style.setProperty('--text-color', color);
+          var s = document.createElement('style');
+          s.id = 'cp-sel';
+          s.textContent = '::selection { background-color: ' + color + '; color: #fafafa; }';
+          document.head.appendChild(s);
+        }
+      })();
+    </script>
   </head>
   <body>
     <Navbar />
+    <ColorPicker variant="desktop" />
     <main>
       <slot />
     </main>

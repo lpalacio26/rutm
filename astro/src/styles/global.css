@@ -1,5 +1,5 @@
 ::selection {
-  background-color: #0022ff;
+  background-color: var(--text-color);
   color: #fafafa;
 }
 
