@@ -59,15 +59,6 @@ const [articles, olderArticles] = await Promise.all([
   sanity.fetch<ArticleListItem[]>(olderQuery),
 ]);
 
-const fmtDateLong = (iso?: string) =>
-  iso
-    ? new Date(iso).toLocaleDateString("en-GB", {
-        year: "numeric",
-        month: "long",
-        day: "2-digit",
-      })
-    : "";
-
 const hero = articles[0];
 
 const rightBig = articles[1];
@@ -94,8 +85,8 @@ const leftTopSrc = leftTop?.heroImage
 
 const leftBottomSrc = leftBottom?.heroImage
   ? urlFor(leftBottom.heroImage)
-      .width(600)
-      .height(338)
+      .width(900)
+      .height(675)
       .fit("crop")
       .quality(80)
       .url()
@@ -578,28 +569,22 @@ const fmtDate = (iso?: string) =>
           "leftTop"
           "small";
       }
-      .card--small {
-        grid-template-columns: 120px 1fr;
-      }
-
-      /* Make the big one feel like a hero card but not enormous */
-      .card-media--big {
-        min-height: 220px;
-      }
-
-      /* Medium becomes compact */
-      .card-media--medium {
-        min-height: 170px;
-      }
-
-      /* Small becomes thumbnail-ish */
+      /* All cards below hero share the same aspect ratio on mobile */
+      .card-media--big,
+      .card-media--medium,
       .card-media--small {
-        max-height: 110px;
+        aspect-ratio: 4 / 3;
+        min-height: unset;
+        max-height: unset;
       }
-    }
-    @media (max-width: 860px) {
+
+      /* Small stacks vertically like the other cards */
       .card--small {
-        grid-template-columns: 160px 1fr; /* 120px is very tight */
+        grid-template-columns: 1fr;
+      }
+
+      .card-body-small {
+        padding: 18px 0 0;
       }
     }
   </style>
