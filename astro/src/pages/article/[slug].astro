@@ -5,8 +5,6 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import { urlFor } from "../../lib/sanityImage";
 import Pill from "../../components/Pill.astro";
 
-type SlugRow = { slug: string };
-
 type Article = {
   title: string;
   excerpt?: string;
@@ -19,14 +17,6 @@ type Article = {
   author?: { name: string; slug: string };
   sections?: { title: string; slug: string }[]
 };
-
-export async function getStaticPaths() {
-  const slugs = await sanity.fetch<SlugRow[]>(
-    `*[_type=="article" && defined(slug.current)]{ "slug": slug.current }`
-  );
-
-  return slugs.map((s) => ({ params: { slug: s.slug } }));
-}
 
 const { slug } = Astro.params;
 

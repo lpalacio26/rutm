@@ -3,7 +3,6 @@ import { sanity } from "../../lib/sanity";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import ArticleGrid from "../../components/ArticleGrid.astro";
 
-type AuthorSlug = { slug: string };
 
 type Author = {
   name: string;
@@ -26,22 +25,8 @@ type Article = {
   sections?: { title: string; slug: string }[];
 };
 
-// 1) Static paths for authors
-export async function getStaticPaths() {
-  const authors = await sanity.fetch<AuthorSlug[]>(
-    `*[_type=="author" && defined(slug.current)]{
-      "slug": slug.current
-    }`
-  );
-
-  return authors.map((a) => ({
-    params: { slug: a.slug },
-  }));
-}
-
 const { slug } = Astro.params;
 
-// 2) Fetch author + their articles
 const data = await sanity.fetch<{
   author: Author;
   articles: Article[];

@@ -7,8 +7,6 @@ import Pill from "../../components/Pill.astro";
 import ArticleGrid from "../../components/ArticleGrid.astro";
 import Marquee from "../../components/Marquee.astro";
 
-type SectionSlug = { slug: string };
-
 type Section = {
   title: string;
 };
@@ -29,22 +27,8 @@ type Article = {
   sections?: { title: string; slug: string }[];
 };
 
-// 1) Static paths for sections
-export async function getStaticPaths() {
-  const sections = await sanity.fetch<SectionSlug[]>(
-    `*[_type=="section" && defined(slug.current)]{
-      "slug": slug.current
-    }`
-  );
-
-  return sections.map((s) => ({
-    params: { slug: s.slug },
-  }));
-}
-
 const { slug } = Astro.params;
 
-// 2) Fetch section + its articles
 const data = await sanity.fetch<{
   section: Section;
   articles: Article[];
