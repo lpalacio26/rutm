@@ -6,27 +6,32 @@ import "../styles/articleGrid.css";
 import Footer from "../components/Footer.astro";
 
 const { title = "RÜTM" } = Astro.props;
-
+const canonicalURL = new URL(Astro.url.pathname, "https://www.rutmmag.com");
 ---
 
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-      <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="canonical" href={canonicalURL} />
     <title>{title}</title>
-    <script defer src="https://cloud.umami.is/script.js" data-website-id="5637ef66-f943-496d-8b87-0a42d66ae4b3"></script>
+    <script
+      defer
+      src="https://cloud.umami.is/script.js"
+      data-website-id="5637ef66-f943-496d-8b87-0a42d66ae4b3"></script>
     <!-- apply saved color before first paint to avoid flash -->
     <script is:inline>
       (function () {
-        var hue = localStorage.getItem('rutm-hue');
+        var hue = localStorage.getItem("rutm-hue");
         if (hue !== null) {
-          var color = 'hsl(' + hue + ', 100%, 42%)';
-          document.documentElement.style.setProperty('--text-color', color);
-          var s = document.createElement('style');
-          s.id = 'cp-sel';
-          s.textContent = '::selection { background-color: ' + color + '; color: #fafafa; }';
+          var color = "hsl(" + hue + ", 100%, 42%)";
+          document.documentElement.style.setProperty("--text-color", color);
+          var s = document.createElement("style");
+          s.id = "cp-sel";
+          s.textContent =
+            "::selection { background-color: " + color + "; color: #fafafa; }";
           document.head.appendChild(s);
         }
       })();
