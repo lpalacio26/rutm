@@ -89,7 +89,7 @@ const published = article.publishedAt
   : null;
 ---
 
-<BaseLayout title={article.title}>
+<BaseLayout title={article.title} description={article.excerpt} image={heroSrc ?? undefined}>
   <div id="progress-bar" aria-hidden="true"></div>
   <article class="article">
     {/* 1) Full-bleed main image */}

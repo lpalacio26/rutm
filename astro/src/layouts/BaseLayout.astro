@@ -5,8 +5,14 @@ import "../styles/global.css";
 import "../styles/articleGrid.css";
 import Footer from "../components/Footer.astro";
 
-const { title = "RÜTM" } = Astro.props;
+const {
+  title = "RÜTM",
+  description,
+  image,
+} = Astro.props;
 const canonicalURL = new URL(Astro.url.pathname, "https://www.rutmmag.com");
+const ogTitle = title === "RÜTM" ? "RÜTM" : `${title} — RÜTM`;
+const ogType = description ? "article" : "website";
 ---
 
 <html lang="en">
@@ -17,6 +23,20 @@ const canonicalURL = new URL(Astro.url.pathname, "https://www.rutmmag.com");
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <link rel="canonical" href={canonicalURL} />
     <title>{title}</title>
+
+    <!-- Open Graph -->
+    <meta property="og:site_name" content="RÜTM" />
+    <meta property="og:type" content={ogType} />
+    <meta property="og:title" content={ogTitle} />
+    <meta property="og:url" content={canonicalURL} />
+    {description && <meta property="og:description" content={description} />}
+    {image && <meta property="og:image" content={image} />}
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content={image ? "summary_large_image" : "summary"} />
+    <meta name="twitter:title" content={ogTitle} />
+    {description && <meta name="twitter:description" content={description} />}
+    {image && <meta name="twitter:image" content={image} />}
     <script
       defer
       src="https://cloud.umami.is/script.js"
