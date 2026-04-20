@@ -57,9 +57,10 @@ const olderQuery = `*[_type=="article"] | order(publishedAt desc)[4...20]{
   "translations": translations[]{language}
 }`;
 // src/pages/index.astro
-const [articles, olderArticles] = await Promise.all([
+const [articles, olderArticles, totalCount] = await Promise.all([
   sanity.fetch<ArticleListItem[]>(query),
   sanity.fetch<ArticleListItem[]>(olderQuery),
+  sanity.fetch<number>(`count(*[_type=="article"])`),
 ]);
 
 const hero = articles[0];
@@ -346,7 +347,83 @@ const fmtDate = (iso?: string) =>
     </section>
     <Marquee text={marqueeText} speed={marqueeSpeed} />
     <ArticleGrid articles={olderArticles} />
+    {totalCount > 20 && (
+      <div class="load-more-wrap">
+        <button id="load-more" class="load-more-btn" data-offset="20">
+          Load more
+        </button>
+      </div>
+    )}
     <script>
+      // Load more
+      const loadMoreBtn = document.getElementById("load-more") as HTMLButtonElement | null;
+
+      if (loadMoreBtn) {
+        loadMoreBtn.addEventListener("click", async () => {
+          const offset = Number(loadMoreBtn.dataset.offset ?? 20);
+          loadMoreBtn.disabled = true;
+
+          const res = await fetch(`/api/articles?offset=${offset}`);
+          const { articles, hasMore, nextOffset } = await res.json();
+
+          const grid = document.querySelector(".older-grid");
+          if (!grid) return;
+
+          const fmtDate = (iso: string) =>
+            new Date(iso).toLocaleDateString("en-GB", { year: "numeric", month: "long", day: "2-digit" });
+
+          for (const a of articles) {
+            const langBadges = [
+              `<span class="lang-badge">EN</span>`,
+              ...(a.translations ?? []).map((t: { language: string }) =>
+                `<span class="lang-badge">${t.language.toUpperCase()}</span>`
+              ),
+            ].join("");
+
+            const pills = (a.sections ?? [])
+              .map((s: { title: string; slug: string }) =>
+                `<a class="pill hover" href="/section/${s.slug}">${s.title}</a>`
+              )
+              .join("");
+
+            const card = `
+              <article class="older-card">
+                <a class="older-media" href="/article/${a.slug}" aria-label="${a.title}">
+                  ${a.imageSrc
+                    ? `<img src="${a.imageSrc}" alt="" loading="lazy" />`
+                    : `<div class="ph" aria-hidden="true"></div>`
+                  }
+                  <div class="lang-badges" aria-hidden="true">${langBadges}</div>
+                </a>
+                <div class="older-body">
+                  <h3 class="older-title"><a href="/article/${a.slug}">${a.title}</a></h3>
+                  ${pills ? `<div class="pills-row">${pills}</div>` : ""}
+                  ${a.excerpt ? `<p class="older-excerpt">${a.excerpt}</p>` : ""}
+                  <div class="older-meta">
+                    ${a.author
+                      ? `<a class="older-byline hover" href="/author/${a.author.slug}">${a.author.name}</a>`
+                      : `<span></span>`
+                    }
+                    ${a.publishedAt
+                      ? `<time class="older-date" datetime="${a.publishedAt}">${fmtDate(a.publishedAt)}</time>`
+                      : ""
+                    }
+                  </div>
+                </div>
+              </article>`;
+
+            grid.insertAdjacentHTML("beforeend", card);
+          }
+
+          if (hasMore) {
+            loadMoreBtn.dataset.offset = String(nextOffset);
+            loadMoreBtn.disabled = false;
+          } else {
+            loadMoreBtn.closest(".load-more-wrap")?.remove();
+          }
+        });
+      }
+
       function setupMarquee() {
         const el = document.querySelector(".banner-track");
         if (!(el instanceof HTMLElement)) return;
@@ -579,6 +656,35 @@ const fmtDate = (iso?: string) =>
     }
 
     /* Responsive */
+    .load-more-wrap {
+      display: flex;
+      justify-content: center;
+      padding: 0 0 48px;
+    }
+
+    .load-more-btn {
+      background: none;
+      border: 2px solid var(--text-color);
+      color: var(--text-color);
+      font: inherit;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 10px 32px;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+
+    .load-more-btn:hover {
+      opacity: 0.7;
+    }
+
+    .load-more-btn:disabled {
+      opacity: 0.3;
+      cursor: default;
+    }
+
     @media (max-width: 860px) {
       .landing {
         padding: 18px 18px 40px;

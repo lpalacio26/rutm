@@ -22,6 +22,7 @@ const ogType = description ? "article" : "website";
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <link rel="canonical" href={canonicalURL} />
+    <link rel="alternate" type="application/rss+xml" title="RÜTM" href="/rss.xml" />
     <title>{title}</title>
 
     <!-- Open Graph -->
@@ -38,6 +39,7 @@ const ogType = description ? "article" : "website";
     {description && <meta name="twitter:description" content={description} />}
     {image && <meta name="twitter:image" content={image} />}
     <script
+      is:inline
       defer
       src="https://cloud.umami.is/script.js"
       data-website-id="5637ef66-f943-496d-8b87-0a42d66ae4b3"></script>
