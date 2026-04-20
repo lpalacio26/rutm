@@ -4,6 +4,8 @@ import { portableTextToHtml } from "../../lib/portableText";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import { urlFor } from "../../lib/sanityImage";
 import Pill from "../../components/Pill.astro";
+import ArticleGrid from "../../components/ArticleGrid.astro";
+import Marquee from "../../components/Marquee.astro";
 
 type Translation = {
   language: string;
@@ -22,8 +24,9 @@ type Article = {
   translations?: Translation[];
 
   author?: { name: string; slug: string };
-  sections?: { title: string; slug: string }[]
+  sections?: { title: string; slug: string }[];
 };
+
 
 const { slug } = Astro.params;
 
@@ -80,6 +83,24 @@ const translatedBodies = translations.map((t) => ({
   html: portableTextToHtml(t.content ?? []),
 }));
 
+const sectionSlugs = article.sections?.map((s) => s.slug) ?? [];
+
+const related = sectionSlugs.length > 0
+  ? await sanity.fetch<RelatedArticle[]>(
+      `*[_type=="article" && slug.current != $slug && count((sections[]->slug.current)[@ in $sectionSlugs]) > 0] | order(publishedAt desc)[0...3]{
+        title,
+        excerpt,
+        publishedAt,
+        "slug": slug.current,
+        heroImage,
+        "author": author->{ name, "slug": slug.current },
+        "sections": sections[]->{ title, "slug": slug.current },
+        "translations": translations[]{language}
+      }`,
+      { slug, sectionSlugs }
+    )
+  : [];
+
 const published = article.publishedAt
   ? new Date(article.publishedAt).toLocaleDateString("en-GB", {
       day: "2-digit",
@@ -91,7 +112,7 @@ const published = article.publishedAt
 
 <BaseLayout title={article.title} description={article.excerpt} image={heroSrc ?? undefined}>
   <div id="progress-bar" aria-hidden="true"></div>
-  <article class="article">
+  <article class={`article${related.length > 0 ? " article--has-related" : ""}`}>
     {/* 1) Full-bleed main image */}
     {
       heroSrc ? (
@@ -152,10 +173,18 @@ const published = article.publishedAt
         <div class="prose" data-lc={t.language} hidden set:html={t.html}></div>
       ))}
       {/* 7) Hero image credit */}
-{article.heroImageCredit ? (
-  <p class="hero-credit">{article.heroImageCredit}</p>
-) : null}
+      {article.heroImageCredit ? (
+        <p class="hero-credit">{article.heroImageCredit}</p>
+      ) : null}
     </div>
+
+    {/* 8) Related articles */}
+    {related.length > 0 && (
+      <div class="related">
+        <Marquee text="MORE FROM RÜTM •" />
+        <ArticleGrid articles={related} showSectionPill={true} />
+      </div>
+    )}
   </article>
 </BaseLayout>
 
@@ -181,6 +210,10 @@ const published = article.publishedAt
   }
 
   /* Centered content column */
+  .article--has-related .content {
+    padding-bottom: 24px;
+  }
+
   .content {
     max-width: 800px;
     margin: 0 auto;
@@ -258,6 +291,7 @@ const published = article.publishedAt
   .lang-btn:hover {
     opacity: 0.75;
   }
+
 
   @media (max-width: 700px) {
     .content {
