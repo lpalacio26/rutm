@@ -176,6 +176,28 @@ const published = article.publishedAt
       {article.heroImageCredit ? (
         <p class="hero-credit">{article.heroImageCredit}</p>
       ) : null}
+
+      {/* 8) Share button */}
+      <div class="share-row">
+        <button class="share-btn" id="share-btn" aria-label="Copy link">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+          </svg>
+          Share article
+        </button>
+        <span class="share-feedback" id="share-feedback"></span>
+      </div>
+
+      {/* 9) Newsletter CTA */}
+      <div class="nl-cta">
+        <p class="nl-cta__label">Get RÜTM in your inbox</p>
+        <div class="nl-cta__row">
+          <input class="nl-cta__input" type="email" id="cta-email" placeholder="your@email.com" autocomplete="email" aria-label="Email address" />
+          <button class="nl-cta__btn" id="cta-submit" type="button">Subscribe</button>
+        </div>
+        <p class="nl-cta__feedback" id="cta-feedback" aria-live="polite"></p>
+      </div>
     </div>
 
     {/* 8) Related articles */}
@@ -212,6 +234,110 @@ const published = article.publishedAt
   /* Centered content column */
   .article--has-related .content {
     padding-bottom: 24px;
+  }
+
+  /* Share button */
+  .share-row {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    margin-top: 48px;
+  }
+
+  .share-btn {
+    background: none;
+    border: none;
+    color: var(--text-color);
+    font: inherit;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    padding: 8px;
+    opacity: 0.45;
+    transition: opacity 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .share-btn:hover { opacity: 0.9; }
+
+  .share-feedback {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    opacity: 0.5;
+    min-height: 1em;
+  }
+
+  /* Newsletter CTA */
+  .nl-cta {
+    margin-top: 40px;
+    padding-top: 32px;
+    border-top: 1px solid currentColor;
+  }
+
+  .nl-cta__label {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    opacity: 0.5;
+    margin: 0 0 14px;
+  }
+
+  .nl-cta__row {
+    display: flex;
+    border: 2px solid var(--text-color);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .nl-cta__input {
+    flex: 1;
+    padding: 0.6rem 0.8rem;
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text-color);
+    min-width: 0;
+  }
+
+  .nl-cta__input::placeholder { opacity: 0.35; }
+
+  .nl-cta__btn {
+    padding: 0.6rem 1.2rem;
+    font: inherit;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: var(--text-color);
+    color: var(--bg-color);
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.15s;
+    flex-shrink: 0;
+  }
+
+  .nl-cta__btn:hover { opacity: 0.8; }
+  .nl-cta__btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .nl-cta__feedback {
+    margin-top: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    min-height: 1.2em;
   }
 
   .content {
@@ -538,6 +664,55 @@ const published = article.publishedAt
 </style>
 
 <script>
+  // Share button
+  const shareBtn = document.getElementById("share-btn") as HTMLButtonElement | null;
+  const shareFeedback = document.getElementById("share-feedback") as HTMLSpanElement | null;
+
+  shareBtn?.addEventListener("click", async () => {
+    await navigator.clipboard.writeText(window.location.href);
+    if (shareFeedback) {
+      shareFeedback.textContent = "Copied!";
+      setTimeout(() => { shareFeedback.textContent = ""; }, 2000);
+    }
+  });
+
+  // Newsletter CTA
+  const ctaInput = document.getElementById("cta-email") as HTMLInputElement | null;
+  const ctaBtn = document.getElementById("cta-submit") as HTMLButtonElement | null;
+  const ctaFeedback = document.getElementById("cta-feedback") as HTMLParagraphElement | null;
+
+  async function submitCta() {
+    const email = ctaInput?.value.trim();
+    if (!email || !ctaBtn || !ctaFeedback) return;
+    ctaBtn.disabled = true;
+    ctaBtn.textContent = "...";
+    ctaFeedback.textContent = "";
+    try {
+      const res = await fetch("/api/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      if (res.ok && data.ok) {
+        ctaFeedback.textContent = "You're in. Welcome!";
+        ctaFeedback.dataset.state = "success";
+        if (ctaInput) ctaInput.value = "";
+      } else {
+        ctaFeedback.textContent = data.error ?? "Something went wrong.";
+        ctaFeedback.dataset.state = "error";
+      }
+    } catch {
+      ctaFeedback.textContent = "Something went wrong.";
+      ctaFeedback.dataset.state = "error";
+    } finally {
+      if (ctaBtn) { ctaBtn.disabled = false; ctaBtn.textContent = "Subscribe"; }
+    }
+  }
+
+  ctaBtn?.addEventListener("click", submitCta);
+  ctaInput?.addEventListener("keydown", (e) => { if (e.key === "Enter") submitCta(); });
+
   // Language switcher
   const LANG_KEY = "rutm-lang";
 
