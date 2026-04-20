@@ -110,6 +110,86 @@ export default defineType({
       of: [{type: 'reference', to: [{type: 'theme'}]}],
     }),
 
+    // Translations
+    defineField({
+      name: 'translations',
+      title: 'Translations',
+      type: 'array',
+      of: [
+        {
+          type: 'object',
+          name: 'translation',
+          title: 'Translation',
+          fields: [
+            defineField({
+              name: 'language',
+              title: 'Language',
+              type: 'string',
+              options: {
+                list: [
+                  {title: 'French', value: 'fr'},
+                  {title: 'Estonian', value: 'et'},
+                  {title: 'Spanish', value: 'es'},
+                ],
+                layout: 'dropdown',
+              },
+              validation: (Rule) => Rule.required(),
+            }),
+            defineField({
+              name: 'title',
+              title: 'Title',
+              type: 'string',
+            }),
+            defineField({
+              name: 'content',
+              title: 'Content',
+              type: 'array',
+              of: [
+                {
+                  type: 'block',
+                  marks: {
+                    annotations: [
+                      {
+                        name: 'footnote',
+                        type: 'object',
+                        title: 'Footnote',
+                        fields: [
+                          {
+                            name: 'note',
+                            title: 'Note',
+                            type: 'text',
+                            rows: 3,
+                            validation: (Rule: any) => Rule.required(),
+                          },
+                        ],
+                      },
+                      {
+                        name: 'link',
+                        type: 'object',
+                        title: 'Link',
+                        fields: [{name: 'href', type: 'url', title: 'URL'}],
+                      },
+                    ],
+                  },
+                },
+                {type: 'pullQuote'},
+                {type: 'imageBlock'},
+              ],
+            }),
+          ],
+          preview: {
+            select: {title: 'language', subtitle: 'title'},
+            prepare({title, subtitle}: any) {
+              return {
+                title: title ? title.toUpperCase() : 'No language',
+                subtitle: subtitle ?? 'No title',
+              }
+            },
+          },
+        },
+      ],
+    }),
+
     // Publishing
     defineField({
       name: 'publishedAt',

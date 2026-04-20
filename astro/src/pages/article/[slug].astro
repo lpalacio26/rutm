@@ -5,6 +5,12 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import { urlFor } from "../../lib/sanityImage";
 import Pill from "../../components/Pill.astro";
 
+type Translation = {
+  language: string;
+  title?: string;
+  content?: any[];
+};
+
 type Article = {
   title: string;
   excerpt?: string;
@@ -13,6 +19,7 @@ type Article = {
   slug: string;
   heroImage?: any;
   heroImageCredit?: string;
+  translations?: Translation[];
 
   author?: { name: string; slug: string };
   sections?: { title: string; slug: string }[]
@@ -24,17 +31,27 @@ const query = `*[_type=="article" && slug.current == $slug][0]{
   title,
   excerpt,
   publishedAt,
- "content": coalesce(content, body)[]{
-  ...,
-  _type == "imageBlock" => {
+  "content": coalesce(content, body)[]{
     ...,
-    "image": image{ ..., asset-> }
-  }
-},
+    _type == "imageBlock" => {
+      ...,
+      "image": image{ ..., asset-> }
+    }
+  },
   "slug": slug.current,
-
   heroImage,
   heroImageCredit,
+  "translations": translations[]{
+    language,
+    title,
+    "content": content[]{
+      ...,
+      _type == "imageBlock" => {
+        ...,
+        "image": image{ ..., asset-> }
+      }
+    }
+  },
   "author": author->{ name, "slug": slug.current },
   "sections": sections[]->{ title, "slug": slug.current }
 }`;
@@ -55,6 +72,13 @@ const heroSrc = article?.heroImage
   : null;
 
 const bodyHtml = portableTextToHtml(article.content ?? []);
+
+const translations = article.translations ?? [];
+const translatedBodies = translations.map((t) => ({
+  language: t.language,
+  title: t.title ?? article.title,
+  html: portableTextToHtml(t.content ?? []),
+}));
 
 const published = article.publishedAt
   ? new Date(article.publishedAt).toLocaleDateString("en-GB", {
@@ -85,18 +109,29 @@ const published = article.publishedAt
     <div class="content">
 
       {/* 2) Big title */}
-      <h1 class="title">{article.title}</h1>
+      <h1 class="title" data-lc="en">{article.title}</h1>
+      {translatedBodies.map((t) => (
+        <h1 class="title" data-lc={t.language} hidden>{t.title}</h1>
+      ))}
 
       {/* 3) Section pills */}
-{article.sections && article.sections.length > 0 ? (
-  <div class="pills-row" style="justify-content: center;">
-  {article.sections.map((s) => (
-    <Pill href={`/section/${s.slug}`}>
-      {s.title}
-    </Pill>
-  ))}
-</div>
-) : null}
+      {article.sections && article.sections.length > 0 ? (
+        <div class="pills-row" style="justify-content: center;">
+          {article.sections.map((s) => (
+            <Pill href={`/section/${s.slug}`}>{s.title}</Pill>
+          ))}
+        </div>
+      ) : null}
+
+      {/* 3b) Language switcher */}
+      <div class="lang-switcher">
+        <button class="lang-btn" data-lang="en">EN</button>
+        {translatedBodies.map((t) => (
+          <button class="lang-btn" data-lang={t.language}>
+            {t.language.toUpperCase()}
+          </button>
+        ))}
+      </div>
 
       {/* 4) Author */}
       {
@@ -112,7 +147,10 @@ const published = article.publishedAt
       {published ? <div class="meta">{published}</div> : null}
 
       {/* 6) Article body */}
-      <div class="prose" set:html={bodyHtml}></div>
+      <div class="prose" data-lc="en" set:html={bodyHtml}></div>
+      {translatedBodies.map((t) => (
+        <div class="prose" data-lc={t.language} hidden set:html={t.html}></div>
+      ))}
       {/* 7) Hero image credit */}
 {article.heroImageCredit ? (
   <p class="hero-credit">{article.heroImageCredit}</p>
@@ -185,6 +223,41 @@ const published = article.publishedAt
   text-align: right;
   letter-spacing: 0.03em;
 }
+
+  .lang-switcher {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 10px auto 4px;
+  }
+
+  .lang-btn {
+    background: none;
+    border: none;
+    border-right: 1px solid currentColor;
+    cursor: pointer;
+    font: inherit;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-color);
+    padding: 3px 12px;
+    opacity: 0.4;
+    transition: opacity 0.15s;
+  }
+
+  .lang-btn:last-child {
+    border-right: none;
+  }
+
+  .lang-btn.active {
+    opacity: 1;
+    font-weight: bold;
+  }
+
+  .lang-btn:hover {
+    opacity: 0.75;
+  }
 
   @media (max-width: 700px) {
     .content {
@@ -431,6 +504,29 @@ const published = article.publishedAt
 </style>
 
 <script>
+  // Language switcher
+  const LANG_KEY = "rutm-lang";
+
+  function setLang(lang: string) {
+    document.querySelectorAll<HTMLElement>("[data-lc]").forEach((el) => {
+      el.hidden = el.dataset.lc !== lang;
+    });
+    document.querySelectorAll<HTMLElement>(".lang-btn").forEach((btn) => {
+      btn.classList.toggle("active", btn.dataset.lang === lang);
+    });
+    localStorage.setItem(LANG_KEY, lang);
+  }
+
+  const langBtns = [...document.querySelectorAll<HTMLElement>(".lang-btn")];
+  if (langBtns.length > 0) {
+    const available = langBtns.map((b) => b.dataset.lang as string);
+    const saved = localStorage.getItem(LANG_KEY) ?? "en";
+    setLang(available.includes(saved) ? saved : "en");
+    langBtns.forEach((btn) => {
+      btn.addEventListener("click", () => setLang(btn.dataset.lang as string));
+    });
+  }
+
   const bar = document.getElementById("progress-bar");
   const article = document.querySelector(".article") as HTMLElement;
 

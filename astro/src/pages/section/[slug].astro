@@ -25,6 +25,7 @@ type Article = {
 
   author?: { name: string; slug: string };
   sections?: { title: string; slug: string }[];
+  translations?: { language: string }[];
 };
 
 const { slug } = Astro.params;
@@ -50,7 +51,8 @@ const data = await sanity.fetch<{
   image,
   "slug": slug.current,
   "author": author->{ name, "slug": slug.current },
-  "sections": sections[]->{ title, "slug": slug.current }
+  "sections": sections[]->{ title, "slug": slug.current },
+  "translations": translations[]{language}
 }
 
   }`,

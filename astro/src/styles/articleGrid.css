@@ -34,6 +34,27 @@
       inset: 0;
     }
 
+    .lang-badges {
+      position: absolute;
+      bottom: 6px;
+      left: 6px;
+      display: flex;
+      gap: 3px;
+      pointer-events: none;
+    }
+
+    .lang-badge {
+      background: var(--bg-color);
+      color: var(--text-color);
+      font-size: 9px;
+      font-weight: bold;
+      letter-spacing: 0.06em;
+      padding: 2px 5px;
+      border-radius: 1px;
+      line-height: 1.4;
+      text-transform: uppercase;
+    }
+
     .older-body {
       padding-top: 14px;
     }
