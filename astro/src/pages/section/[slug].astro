@@ -1,9 +1,6 @@
 ---
 import { sanity } from "../../lib/sanity";
-import { portableTextToHtml } from "../../lib/portableText";
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import { urlFor } from "../../lib/sanityImage"; // same helper as index
-import Pill from "../../components/Pill.astro";
 import ArticleGrid from "../../components/ArticleGrid.astro";
 import Marquee from "../../components/Marquee.astro";
 
@@ -60,7 +57,7 @@ const data = await sanity.fetch<{
 );
 
 if (!data?.section) {
-  return new Response("Section not found", { status: 404 });
+  return Astro.rewrite("/404");
 }
 ---
 

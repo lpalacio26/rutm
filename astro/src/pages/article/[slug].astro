@@ -62,7 +62,7 @@ const query = `*[_type=="article" && slug.current == $slug][0]{
 const article = await sanity.fetch<Article>(query, { slug });
 
 if (!article) {
-  return new Response("Not found", { status: 404 });
+  return Astro.rewrite("/404");
 }
 
 const heroSrc = article?.heroImage

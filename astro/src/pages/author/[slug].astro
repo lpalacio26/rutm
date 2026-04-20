@@ -57,7 +57,7 @@ const data = await sanity.fetch<{
 );
 
 if (!data?.author) {
-  return new Response("Author not found", { status: 404 });
+  return Astro.rewrite("/404");
 }
 ---
 
