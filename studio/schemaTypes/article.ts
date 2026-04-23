@@ -19,6 +19,22 @@ export default defineType({
       validation: (Rule) => Rule.required(),
     }),
     defineField({
+      name: 'language',
+      title: 'Language',
+      type: 'string',
+      options: {
+        list: [
+          {title: 'English', value: 'en'},
+          {title: 'French', value: 'fr'},
+          {title: 'Estonian', value: 'et'},
+          {title: 'Spanish', value: 'es'},
+        ],
+        layout: 'dropdown',
+      },
+      initialValue: 'en',
+      validation: (Rule) => Rule.required(),
+    }),
+    defineField({
       name: 'excerpt',
       title: 'Excerpt',
       type: 'text',

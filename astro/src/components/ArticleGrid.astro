@@ -17,6 +17,7 @@ type Article = {
   author?: { name: string; slug: string };
   sections?: { title: string; slug: string }[];
   translations?: { language: string }[];
+  language?: string;
 };
 
 type Props = {
@@ -52,7 +53,7 @@ const fmtDateLong = (iso?: string) =>
             <a class="older-media" href={`/article/${a.slug}`} aria-label={a.title}>
               {src ? <img src={src} alt="" loading="lazy" /> : <div class="ph" aria-hidden="true" />}
               <div class="lang-badges" aria-hidden="true">
-                <span class="lang-badge">EN</span>
+                <span class="lang-badge">{(a.language ?? "en").toUpperCase()}</span>
                 {(a.translations ?? []).map((t) => (
                   <span class="lang-badge">{t.language.toUpperCase()}</span>
                 ))}

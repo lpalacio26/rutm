@@ -16,7 +16,8 @@ export const GET: APIRoute = async ({ url }) => {
         heroImage,
         "author": author->{ name, "slug": slug.current },
         "sections": sections[]->{ title, "slug": slug.current },
-        "translations": translations[]{language}
+        "translations": translations[]{language},
+        language
       }`
     ),
     sanity.fetch<number>(`count(*[_type=="article"])`),

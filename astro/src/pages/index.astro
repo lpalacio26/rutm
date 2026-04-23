@@ -15,6 +15,7 @@ type ArticleListItem = {
   sections: { title: string; slug: string }[];
   heroImage?: SanityImage;
   translations?: { language: string }[];
+  language?: string;
 };
 
 type SanityImage = {
@@ -43,7 +44,8 @@ const query = `*[_type=="article"] | order(publishedAt desc)[0...4]{
   heroImage,
   "author": author->{ name, "slug": slug.current },
   "sections": sections[]->{ title, "slug": slug.current },
-  "translations": translations[]{language}
+  "translations": translations[]{language},
+  language
 }`;
 
 const olderQuery = `*[_type=="article"] | order(publishedAt desc)[4...20]{
@@ -54,7 +56,8 @@ const olderQuery = `*[_type=="article"] | order(publishedAt desc)[4...20]{
   heroImage,
   "author": author->{ name, "slug": slug.current },
   "sections": sections[]->{ title, "slug": slug.current },
-  "translations": translations[]{language}
+  "translations": translations[]{language},
+  language
 }`;
 // src/pages/index.astro
 const [articles, olderArticles, totalCount] = await Promise.all([
@@ -126,7 +129,7 @@ const fmtDate = (iso?: string) =>
               <div class="ph" aria-hidden="true" />
             )}
             <div class="lang-badges" aria-hidden="true">
-              <span class="lang-badge">EN</span>
+              <span class="lang-badge">{(hero.language ?? "en").toUpperCase()}</span>
               {(hero.translations ?? []).map((t) => (
                 <span class="lang-badge">{t.language.toUpperCase()}</span>
               ))}
@@ -185,7 +188,7 @@ const fmtDate = (iso?: string) =>
                   <div class="ph" aria-hidden="true" />
                 )}
                 <div class="lang-badges" aria-hidden="true">
-                  <span class="lang-badge">EN</span>
+                  <span class="lang-badge">{(rightBig.language ?? "en").toUpperCase()}</span>
                   {(rightBig.translations ?? []).map((t) => (
                     <span class="lang-badge">{t.language.toUpperCase()}</span>
                   ))}
@@ -243,7 +246,7 @@ const fmtDate = (iso?: string) =>
                   <div class="ph" aria-hidden="true" />
                 )}
                 <div class="lang-badges" aria-hidden="true">
-                  <span class="lang-badge">EN</span>
+                  <span class="lang-badge">{(leftTop.language ?? "en").toUpperCase()}</span>
                   {(leftTop.translations ?? []).map((t) => (
                     <span class="lang-badge">{t.language.toUpperCase()}</span>
                   ))}
@@ -301,7 +304,7 @@ const fmtDate = (iso?: string) =>
                   <div class="ph" aria-hidden="true" />
                 )}
                 <div class="lang-badges" aria-hidden="true">
-                  <span class="lang-badge">EN</span>
+                  <span class="lang-badge">{(leftBottom.language ?? "en").toUpperCase()}</span>
                   {(leftBottom.translations ?? []).map((t) => (
                     <span class="lang-badge">{t.language.toUpperCase()}</span>
                   ))}
@@ -374,7 +377,7 @@ const fmtDate = (iso?: string) =>
 
           for (const a of articles) {
             const langBadges = [
-              `<span class="lang-badge">EN</span>`,
+              `<span class="lang-badge">${(a.language ?? "en").toUpperCase()}</span>`,
               ...(a.translations ?? []).map((t: { language: string }) =>
                 `<span class="lang-badge">${t.language.toUpperCase()}</span>`
               ),

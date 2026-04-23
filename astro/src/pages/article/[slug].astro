@@ -19,6 +19,7 @@ type Article = {
   publishedAt?: string;
   content?: any[];
   slug: string;
+  language?: string;
   heroImage?: any;
   heroImageCredit?: string;
   translations?: Translation[];
@@ -42,6 +43,7 @@ const query = `*[_type=="article" && slug.current == $slug][0]{
     }
   },
   "slug": slug.current,
+  language,
   heroImage,
   heroImageCredit,
   "translations": translations[]{
@@ -86,7 +88,7 @@ const translatedBodies = translations.map((t) => ({
 const sectionSlugs = article.sections?.map((s) => s.slug) ?? [];
 
 const related = sectionSlugs.length > 0
-  ? await sanity.fetch<RelatedArticle[]>(
+  ? await sanity.fetch<any[]>(
       `*[_type=="article" && slug.current != $slug && count((sections[]->slug.current)[@ in $sectionSlugs]) > 0] | order(publishedAt desc)[0...3]{
         title,
         excerpt,
@@ -130,7 +132,7 @@ const published = article.publishedAt
     <div class="content">
 
       {/* 2) Big title */}
-      <h1 class="title" data-lc="en">{article.title}</h1>
+      <h1 class="title" data-lc={article.language ?? "en"}>{article.title}</h1>
       {translatedBodies.map((t) => (
         <h1 class="title" data-lc={t.language} hidden>{t.title}</h1>
       ))}
@@ -145,8 +147,8 @@ const published = article.publishedAt
       ) : null}
 
       {/* 3b) Language switcher */}
-      <div class="lang-switcher">
-        <button class="lang-btn" data-lang="en">EN</button>
+      <div class="lang-switcher" data-default={article.language ?? "en"}>
+        <button class="lang-btn" data-lang={article.language ?? "en"}>{(article.language ?? "en").toUpperCase()}</button>
         {translatedBodies.map((t) => (
           <button class="lang-btn" data-lang={t.language}>
             {t.language.toUpperCase()}
@@ -168,7 +170,7 @@ const published = article.publishedAt
       {published ? <div class="meta">{published}</div> : null}
 
       {/* 6) Article body */}
-      <div class="prose" data-lc="en" set:html={bodyHtml}></div>
+      <div class="prose" data-lc={article.language ?? "en"} set:html={bodyHtml}></div>
       {translatedBodies.map((t) => (
         <div class="prose" data-lc={t.language} hidden set:html={t.html}></div>
       ))}
@@ -729,8 +731,9 @@ const published = article.publishedAt
   const langBtns = [...document.querySelectorAll<HTMLElement>(".lang-btn")];
   if (langBtns.length > 0) {
     const available = langBtns.map((b) => b.dataset.lang as string);
-    const saved = localStorage.getItem(LANG_KEY) ?? "en";
-    setLang(available.includes(saved) ? saved : "en");
+    const defaultLang = (document.querySelector<HTMLElement>(".lang-switcher")?.dataset.default) ?? "en";
+    const saved = localStorage.getItem(LANG_KEY) ?? defaultLang;
+    setLang(available.includes(saved) ? saved : defaultLang);
     langBtns.forEach((btn) => {
       btn.addEventListener("click", () => setLang(btn.dataset.lang as string));
     });
