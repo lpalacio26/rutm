@@ -24,6 +24,7 @@ const ogType = description ? "article" : "website";
     <link rel="canonical" href={canonicalURL} />
     <link rel="alternate" type="application/rss+xml" title="RÜTM" href="/rss.xml" />
     <title>{title}</title>
+    {description && <meta name="description" content={description} />}
 
     <!-- Open Graph -->
     <meta property="og:site_name" content="RÜTM" />
