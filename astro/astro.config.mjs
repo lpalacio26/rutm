@@ -7,5 +7,5 @@ export default defineConfig({
   site: 'https://www.rutmmag.com',
   output: "server",
   adapter: vercel(),
-  integrations: [sitemap()],
+  integrations: [],
 });
